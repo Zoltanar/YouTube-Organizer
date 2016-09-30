@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Security.Claims;
-using System.Security.Principal;
 using Microsoft.AspNetCore.Identity;
-using YoutubeOrganizer.Models;
 
 namespace YoutubeOrganizer
 {
