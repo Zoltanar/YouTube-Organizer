@@ -1,6 +1,4 @@
 ﻿/// <autosync enabled="true" />
-/// <reference path="assets/jquery.js" />
-/// <reference path="assets/jquery.min.js" />
 /// <reference path="js/site.js" />
 /// <reference path="lib/bootstrap/dist/js/bootstrap.js" />
 /// <reference path="lib/jquery/dist/jquery.js" />

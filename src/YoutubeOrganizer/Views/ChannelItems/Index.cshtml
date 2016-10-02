@@ -11,20 +11,15 @@
 {
     <p>
         <a asp-action="GetSubscriptions">Get Subscriptions</a>
+        <a asp-action="GetVideos">Get Videos</a>
     </p>
 }
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Id)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UploadPlaylist)
-            </th>
+            <th>@Html.DisplayNameFor(model => model.Title)</th>
+            <th>@Html.DisplayNameFor(model => model.UploadPlaylist)</th>
+            <th>@Html.DisplayNameFor(model => model.NumberOfVideos)</th>
             <th></th>
         </tr>
     </thead>
@@ -32,19 +27,12 @@
         @foreach (var item in Model)
         {
             <tr>
+                <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                <td>@Html.DisplayFor(modelItem => item.UploadPlaylist)</td>
+                <td>@Html.DisplayFor(modelItem => item.NumberOfVideos)</td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Id)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UploadPlaylist)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.DatabaseId">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.DatabaseId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.DatabaseId">Delete</a>
+                    <a asp-action="Details" asp-route-id="@item.DatabaseId">Details</a> | 
+                    <a asp-action="UpdateVideos" asp-route-id="@item.DatabaseId">Update Videos</a>
                 </td>
             </tr>
         }

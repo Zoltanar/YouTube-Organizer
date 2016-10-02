@@ -21,5 +21,6 @@ namespace YoutubeOrganizer.Data
 
         public DbSet<ChannelItem> ChannelItem { get; set; }
         public DbSet<SubscriptionItem> SubscriptionItem { get; set; }
+        public DbSet<VideoItem> VideoItem { get; set; }
     }
 }

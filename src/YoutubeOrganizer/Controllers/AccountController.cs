@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Google.Apis.Util.Store;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using YoutubeOrganizer.Data;
 using YoutubeOrganizer.Models;
 using YoutubeOrganizer.Models.AccountViewModels;
 using YoutubeOrganizer.Services;
@@ -181,6 +175,11 @@ namespace YoutubeOrganizer.Controllers
                 //var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
                 //Debug.Write(Newtonsoft.Json.JsonConvert.SerializeObject(info,settings));
                 GlobalVariables.UserLoginInfo[info.Principal.FindFirstValue(ClaimTypes.Email)] = info;
+                using (var writer = new StreamWriter(new FileStream(GlobalVariables.TempSavedLoginInfoFile, FileMode.Create)))
+                {
+                    var jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+                    writer.Write(JsonConvert.SerializeObject(GlobalVariables.UserLoginInfo, jsonSettings));
+                }
                 return RedirectToLocal(returnUrl);
             }
             if (result.RequiresTwoFactor)

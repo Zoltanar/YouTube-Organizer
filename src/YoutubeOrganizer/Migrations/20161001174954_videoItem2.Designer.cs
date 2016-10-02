@@ -8,8 +8,8 @@ using YoutubeOrganizer.Data;
 namespace YoutubeOrganizer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20160929222245_compositekeysubscription")]
-    partial class compositekeysubscription
+    [Migration("20161001174954_videoItem2")]
+    partial class videoItem2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -201,6 +201,30 @@ namespace YoutubeOrganizer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SubscriptionItem");
+                });
+
+            modelBuilder.Entity("YoutubeOrganizer.Models.VideoItem", b =>
+                {
+                    b.Property<int>("DatabaseId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ChannelId");
+
+                    b.Property<string>("Duration");
+
+                    b.Property<string>("Id");
+
+                    b.Property<long?>("ThumbnailHeight");
+
+                    b.Property<string>("ThumbnailUrl");
+
+                    b.Property<long?>("ThumbnailWidth");
+
+                    b.Property<string>("Title");
+
+                    b.HasKey("DatabaseId");
+
+                    b.ToTable("VideoItem");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<string>", b =>

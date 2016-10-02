@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 
 namespace YoutubeOrganizer.Models
 {
@@ -25,5 +26,13 @@ namespace YoutubeOrganizer.Models
         /// </summary>
         //[JsonProperty("uploads")]
         public string UploadPlaylist { get; set; }//=> ContentDetails.RelatedPlaylists.Uploads;
+
+        [Display(Name = "Number of videos")]
+        public int NumberOfVideos { get; set; }
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        /// <filterpriority>2</filterpriority>
+        public override string ToString() => $"Title= {Title} - ID= {Id}";
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using YoutubeOrganizer.Data;
 using YoutubeOrganizer.Models;
 using YoutubeOrganizer.Services;
@@ -81,9 +82,9 @@ namespace YoutubeOrganizer
             {
                 AccessType = "offline",
                 SaveTokens = true,
-                Scope ={YouTubeService.Scope.Youtube},
+                Scope = { YouTubeService.Scope.Youtube },
                 AuthenticationScheme = "Google"
-                
+
             };
             using (var stream = new FileStream(GlobalVariables.SecretsFile, FileMode.Open, FileAccess.Read))
             {
@@ -92,6 +93,32 @@ namespace YoutubeOrganizer
                 googleOptions.ClientSecret = secrets.ClientSecret;
             }
             GlobalVariables.UserLoginInfo = new Dictionary<string, ExternalLoginInfo>();
+            if (File.Exists(GlobalVariables.TempSavedLoginInfoFile))
+            {
+                using (
+                    var reader =
+                        new StreamReader(new FileStream(GlobalVariables.TempSavedLoginInfoFile, FileMode.Open,
+                            FileAccess.Read)))
+                {
+                    string jsonContent = reader.ReadToEnd();
+                    if (jsonContent.Length == 0)
+                    {
+                        GlobalVariables.UserLoginInfo = new Dictionary<string, ExternalLoginInfo>();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            GlobalVariables.UserLoginInfo =
+                                JsonConvert.DeserializeObject<Dictionary<string, ExternalLoginInfo>>(jsonContent);
+                        }
+                        catch (JsonSerializationException e)
+                        {
+                            GlobalVariables.UserLoginInfo = new Dictionary<string, ExternalLoginInfo>();
+                        }
+                    }
+                }
+            }
             app.UseGoogleAuthentication(googleOptions);
 
             app.UseMvc(routes =>
