@@ -1,0 +1,55 @@
+@model Tuple<ChannelItem, IEnumerable<VideoItem>>
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>@Html.DisplayFor(model => model.Item1.Title)</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            YouTube Channel
+        </dt>
+        <dd>
+            <a href="@Model.Item1.ChannelURL">@Model.Item1.ChannelURL</a>
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Item1.UploadPlaylist)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Item1.UploadPlaylist)
+        </dd>
+
+    </dl>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a> | 
+<a asp-action="UpdateVideosChannelPage" asp-route-id="@Model.Item1.Id">Update Videos</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Item2.FirstOrDefault().Title)</th>
+            <th>@Html.DisplayNameFor(model => model.Item2.FirstOrDefault().PublishDate)</th>
+            <th>@Html.DisplayNameFor(model => model.Item2.FirstOrDefault().Watched)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Item2)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                <td>@Html.DisplayFor(modelItem => item.PublishDate)</td>
+                <td>@Html.DisplayFor(modelItem => item.Watched)</td>
+                <td>
+                    <a asp-controller="Videos" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,19 +15,21 @@ using Microsoft.EntityFrameworkCore;
 using YoutubeOrganizer.Data;
 using YoutubeOrganizer.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace YoutubeOrganizer.Controllers
 {
 
-    public class ChannelItemsController : Controller
+    public class ChannelsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private ExternalLoginInfo _info;
         private const int YouTubeMaxResults = 50;
+        private const string YouTubeShortURL = "https://youtu.be/";
+        private const string YouTubeChannelPrepend = "https://youtube.com/channel/";
 
 
-        public ChannelItemsController(ApplicationDbContext context, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
+        public ChannelsController(ApplicationDbContext context, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
         {
             _context = context;
         }
@@ -60,7 +63,7 @@ namespace YoutubeOrganizer.Controllers
             {
                 _info = GlobalVariables.UserLoginInfo[User.Identity.Name];
             }
-            if (_info == null || !_info.LoginProvider.Equals("Google")) return null; 
+            if (_info == null || !_info.LoginProvider.Equals("Google")) return null;
             //get user credential and initialize youtube service
             var credential = GetCredentialForApi();
             return new YouTubeService(new BaseClientService.Initializer
@@ -89,28 +92,56 @@ namespace YoutubeOrganizer.Controllers
             });
 
             List<SubscriptionItem> subs = _context.SubscriptionItem.Where(x => x.UserId.Equals(_info.ProviderKey)).ToList();
-
+            var presentVideos = await _context.VideoItem.Select(x => x.Id).ToListAsync();
             var channels = _context.ChannelItem.Where(channel => subs.Find(sub => sub.ChannelId.Equals(channel.Id)) != null).ToList();
-            await FetchVideoIdsByChannel(youtubeService, channels);
+            await FetchVideoIdsByChannel(youtubeService, channels, presentVideos);
             //prepare request
             return RedirectToAction("Index");
         }
 
-
-        public async Task<IActionResult> UpdateVideos(int? id)
+        /// <summary>
+        /// Get videos from the selected channel.
+        /// </summary>
+        /// <param name="id">Database ID of channel</param>
+        /// <returns></returns>
+        public async Task<IActionResult> UpdateVideos(string id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.DatabaseId == id);
+            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.Id.Equals(id));
             if (channelItem == null)
             {
                 return NotFound();
             }
+            var presentVideos = await _context.VideoItem.Select(x => x.Id).ToListAsync();
             var youTubeService = CreateYouTubeService();
-            await FetchVideoIdsByChannel(youTubeService, new[] {channelItem});
+            if(youTubeService == null) return RedirectToAction("Index"); //TODO should return error
+            await FetchVideoIdsByChannel(youTubeService, new[] { channelItem }, presentVideos);
             return RedirectToAction("Index");
+        }
+
+        /// <summary>
+        /// Get videos from the selected channel.
+        /// </summary>
+        /// <param name="id">Database ID of channel</param>
+        /// <returns></returns>
+        public async Task<IActionResult> UpdateVideosChannelPage(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.Id.Equals(id));
+            if (channelItem == null)
+            {
+                return NotFound();
+            }
+            var presentVideos = await _context.VideoItem.Select(x => x.Id).ToListAsync();
+            var youTubeService = CreateYouTubeService();
+            await FetchVideoIdsByChannel(youTubeService, new[] { channelItem }, presentVideos);
+            return RedirectToAction($"Details/{channelItem.Id}");
         }
 
         /// <summary>
@@ -118,8 +149,9 @@ namespace YoutubeOrganizer.Controllers
         /// </summary>
         /// <param name="youTubeService">Authenticated Service to be used</param>
         /// <param name="channels">List of channels</param>
+        /// <param name="presentVideos">List of videos already stored</param>
         /// <returns></returns>
-        private async Task FetchVideoIdsByChannel(YouTubeService youTubeService, IEnumerable<ChannelItem> channels)
+        private async Task FetchVideoIdsByChannel(YouTubeService youTubeService, IEnumerable<ChannelItem> channels, List<string> presentVideos)
         {
             var request = youTubeService.PlaylistItems.List("contentDetails");
             request.MaxResults = YouTubeMaxResults;
@@ -135,7 +167,6 @@ namespace YoutubeOrganizer.Controllers
                     response = await request.ExecuteAsync();
                     items.AddRange(response.Items);
                 }
-                var presentVideos = _context.VideoItem.Select(x => x.Id).ToList();
                 var videosToGet = items.Select(x => x.ContentDetails.VideoId).Except(presentVideos).ToArray();
                 await GetChannelVideos(youTubeService, channel, videosToGet);
             }
@@ -156,6 +187,9 @@ namespace YoutubeOrganizer.Controllers
                 taken += YouTubeMaxResults;
             } while (taken < videos.Length);
             _context.VideoItem.AddRange(videoList);
+            var channelEntity = await _context.ChannelItem.SingleOrDefaultAsync(x => x.Id.Equals(channel.Id));
+            channelEntity.NumberOfVideos += videoList.Count;
+            _context.Update(channelEntity);
             await _context.SaveChangesAsync();
         }
 
@@ -185,7 +219,6 @@ namespace YoutubeOrganizer.Controllers
             }
             return list;
         }
-
 
         /// <summary>
         /// Get Subscriptions for currently logged in user.
@@ -246,22 +279,12 @@ namespace YoutubeOrganizer.Controllers
                 _info = GlobalVariables.UserLoginInfo.Keys.Contains(User.Identity.Name) ? GlobalVariables.UserLoginInfo[User.Identity.Name] : null;
             }
             if (_info == null) return View(new List<ChannelItem>()); //TODO should return not logged in or not logged in with google
-            List<SubscriptionItem> subs = _context.SubscriptionItem.Where(x => x.UserId.Equals(_info.ProviderKey)).ToList();
+            List<SubscriptionItem> subs = await _context.SubscriptionItem.Where(x => x.UserId.Equals(_info.ProviderKey)).ToListAsync();
 
-            var results = await _context.ChannelItem.Where(channel => subs.Find(sub => sub.ChannelId.Equals(channel.Id)) != null).ToListAsync();
-            await SetChannelNumberOfVideos(results);
-            return View(results);
+            return View(_context.ChannelItem.Where(channel => subs.Find(sub => sub.ChannelId.Equals(channel.Id)) != null));
         }
 
-        private async Task SetChannelNumberOfVideos(List<ChannelItem> channels)
-        {
-            foreach (var channel in channels)
-            {
-                channel.NumberOfVideos = await _context.VideoItem.CountAsync(x => x.ChannelId.Equals(channel.Id));
-            }
-        }
-
-        private static List<ChannelItem> MakeChannelList(IEnumerable<Channel> channelResponseItems)
+        private static IEnumerable<ChannelItem> MakeChannelList(IEnumerable<Channel> channelResponseItems)
         {
             List<ChannelItem> list = new List<ChannelItem>();
             foreach (var channel in channelResponseItems)
@@ -277,128 +300,74 @@ namespace YoutubeOrganizer.Controllers
         }
 
         // GET: ChannelItems/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.DatabaseId == id);
+            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.Id.Equals(id));
             if (channelItem == null)
             {
                 return NotFound();
             }
-
-            return View(channelItem);
+            channelItem.ChannelURL = YouTubeChannelPrepend + channelItem.Id;
+            List<VideoItem> channelVideos = await _context.VideoItem.Where(video => video.ChannelId.Equals(id)).
+                OrderByDescending(video => video.PublishDate).ToListAsync();
+            return View(new Tuple<ChannelItem, IEnumerable<VideoItem>>(channelItem, channelVideos));
         }
 
-        // GET: ChannelItems/Create
-        public IActionResult Create()
+
+        public async Task<IActionResult> History()
         {
-            return View();
+            if (User != null)
+            {
+                _info = GlobalVariables.UserLoginInfo[User.Identity.Name];
+            }
+            if (_info == null) return RedirectToAction("Index"); //TODO should return not logged in
+            List<string> videoIDs = await _context.UserVideo.Where(x => x.UserID.Equals(_info.ProviderKey) && x.Watched).Select(x => x.VideoId).ToListAsync();
+            List<VideoItem> videos = await _context.VideoItem.Where(x => videoIDs.Contains(x.Id)).OrderByDescending(x => x.PublishDate).ToListAsync();
+
+            var channels = await _context.ChannelItem.ToListAsync();
+            IEnumerable<VideoItem> listForViewing = videos.Join(channels, video => video.ChannelId, channel => channel.Id, (video, channel) => new VideoItem
+            {
+                ChannelTitle = channel.Title,
+                Title = video.Title,
+                Duration = video.Duration,
+                PublishDate = video.PublishDate,
+                ThumbnailUrl = video.ThumbnailUrl,
+                VideoURL = video.VideoURL
+            });
+            return View(listForViewing);
+
         }
 
-        // POST: ChannelItems/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DatabaseId,Id,UploadPlaylist")] ChannelItem channelItem)
+
+        /// <summary>
+        /// DO NOT USE. Get User's watched videos. Currently returns zero items due to YouTube API changes. 
+        /// </summary>
+        /// <returns></returns>
+        [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
+        public async Task<IActionResult> GetHistoryList()
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(channelItem);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return View(channelItem);
-        }
+            return NotFound();
 
-        // GET: ChannelItems/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.DatabaseId == id);
-            if (channelItem == null)
-            {
-                return NotFound();
-            }
-            return View(channelItem);
-        }
-
-        // POST: ChannelItems/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("DatabaseId,Id,UploadPlaylist")] ChannelItem channelItem)
-        {
-            if (id != channelItem.DatabaseId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(channelItem);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ChannelItemExists(channelItem.DatabaseId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction("Index");
-            }
-            return View(channelItem);
-        }
-
-        // GET: ChannelItems/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.DatabaseId == id);
-            if (channelItem == null)
-            {
-                return NotFound();
-            }
-
-            return View(channelItem);
-        }
-
-        // POST: ChannelItems/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.DatabaseId == id);
-            _context.ChannelItem.Remove(channelItem);
-            await _context.SaveChangesAsync();
+            var youTubeService = CreateYouTubeService();
+            var request = youTubeService.PlaylistItems.List("contentDetails");
+            request.PlaylistId = "HL";
+            var response = await request.ExecuteAsync();
+            if (response.Items.Count == 0) return RedirectToAction("Index");
+            //else etc
             return RedirectToAction("Index");
         }
 
-        private bool ChannelItemExists(int id)
+        public async Task<string> GetUserIdYouTube(YouTubeService youTubeService)
         {
-            return _context.ChannelItem.Any(e => e.DatabaseId == id);
+            var request = youTubeService.Channels.List("id");
+            request.Mine = true;
+            var response = await request.ExecuteAsync();
+            return response.Items.FirstOrDefault().Id;
         }
-
-
     }
 }

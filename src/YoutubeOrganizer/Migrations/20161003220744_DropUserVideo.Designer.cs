@@ -8,9 +8,10 @@ using YoutubeOrganizer.Data;
 namespace YoutubeOrganizer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161003220744_DropUserVideo")]
+    partial class DropUserVideo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.1")
@@ -201,19 +202,6 @@ namespace YoutubeOrganizer.Migrations
                     b.ToTable("SubscriptionItem");
                 });
 
-            modelBuilder.Entity("YoutubeOrganizer.Models.UserVideo", b =>
-                {
-                    b.Property<string>("UserID");
-
-                    b.Property<string>("VideoId");
-
-                    b.Property<bool>("Watched");
-
-                    b.HasKey("UserID", "VideoId");
-
-                    b.ToTable("UserVideo");
-                });
-
             modelBuilder.Entity("YoutubeOrganizer.Models.VideoItem", b =>
                 {
                     b.Property<string>("Id");
@@ -231,8 +219,6 @@ namespace YoutubeOrganizer.Migrations
                     b.Property<long?>("ThumbnailWidth");
 
                     b.Property<string>("Title");
-
-                    b.Property<string>("VideoURL");
 
                     b.HasKey("Id");
 

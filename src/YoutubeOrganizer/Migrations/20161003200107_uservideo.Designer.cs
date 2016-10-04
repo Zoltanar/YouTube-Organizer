@@ -8,9 +8,10 @@ using YoutubeOrganizer.Data;
 namespace YoutubeOrganizer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161003200107_uservideo")]
+    partial class uservideo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.1")
@@ -174,6 +175,9 @@ namespace YoutubeOrganizer.Migrations
 
             modelBuilder.Entity("YoutubeOrganizer.Models.ChannelItem", b =>
                 {
+                    b.Property<int>("DatabaseId")
+                        .ValueGeneratedOnAdd();
+
                     b.Property<string>("Id");
 
                     b.Property<int>("NumberOfVideos");
@@ -182,7 +186,7 @@ namespace YoutubeOrganizer.Migrations
 
                     b.Property<string>("UploadPlaylist");
 
-                    b.HasKey("Id");
+                    b.HasKey("DatabaseId");
 
                     b.ToTable("ChannelItem");
                 });
@@ -203,9 +207,9 @@ namespace YoutubeOrganizer.Migrations
 
             modelBuilder.Entity("YoutubeOrganizer.Models.UserVideo", b =>
                 {
-                    b.Property<string>("UserID");
+                    b.Property<int>("UserID");
 
-                    b.Property<string>("VideoId");
+                    b.Property<int>("VideoId");
 
                     b.Property<bool>("Watched");
 
@@ -216,11 +220,14 @@ namespace YoutubeOrganizer.Migrations
 
             modelBuilder.Entity("YoutubeOrganizer.Models.VideoItem", b =>
                 {
-                    b.Property<string>("Id");
+                    b.Property<int>("DatabaseId")
+                        .ValueGeneratedOnAdd();
 
                     b.Property<string>("ChannelId");
 
                     b.Property<string>("Duration");
+
+                    b.Property<string>("Id");
 
                     b.Property<DateTime?>("PublishDate");
 
@@ -232,9 +239,7 @@ namespace YoutubeOrganizer.Migrations
 
                     b.Property<string>("Title");
 
-                    b.Property<string>("VideoURL");
-
-                    b.HasKey("Id");
+                    b.HasKey("DatabaseId");
 
                     b.ToTable("VideoItem");
                 });

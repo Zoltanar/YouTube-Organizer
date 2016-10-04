@@ -1,0 +1,86 @@
+@model YoutubeOrganizer.Models.VideoItem
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Edit</h2>
+
+<form asp-action="Edit">
+    <div class="form-horizontal">
+        <h4>VideoItem</h4>
+        <hr />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+        <div class="form-group">
+            <label asp-for="ChannelId" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="ChannelId" class="form-control" />
+                <span asp-validation-for="ChannelId" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Duration" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Duration" class="form-control" />
+                <span asp-validation-for="Duration" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="PublishDate" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="PublishDate" class="form-control" />
+                <span asp-validation-for="PublishDate" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="ThumbnailHeight" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="ThumbnailHeight" class="form-control" />
+                <span asp-validation-for="ThumbnailHeight" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="ThumbnailUrl" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="ThumbnailUrl" class="form-control" />
+                <span asp-validation-for="ThumbnailUrl" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="ThumbnailWidth" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="ThumbnailWidth" class="form-control" />
+                <span asp-validation-for="ThumbnailWidth" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Title" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="VideoURL" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="VideoURL" class="form-control" />
+                <span asp-validation-for="VideoURL" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+</form>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

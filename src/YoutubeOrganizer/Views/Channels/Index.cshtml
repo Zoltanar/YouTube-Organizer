@@ -5,13 +5,17 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Index</h2>
+<h2>Your Subscriptions</h2>
 
 @if (Context.User.Identity.IsAuthenticated)
 {
     <p>
-        <a asp-action="GetSubscriptions">Get Subscriptions</a>
-        <a asp-action="GetVideos">Get Videos</a>
+        <a asp-action="History">See History</a>
+    </p>
+    <p>
+        <a asp-action="GetSubscriptions">Get Subscriptions</a> |
+        <a asp-action="GetVideos">Get Videos</a> |
+        <a asp-action="GetHistoryList">Get Watchlist</a>
     </p>
 }
 <table class="table">
@@ -31,8 +35,8 @@
                 <td>@Html.DisplayFor(modelItem => item.UploadPlaylist)</td>
                 <td>@Html.DisplayFor(modelItem => item.NumberOfVideos)</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@item.DatabaseId">Details</a> | 
-                    <a asp-action="UpdateVideos" asp-route-id="@item.DatabaseId">Update Videos</a>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> | 
+                    <a asp-action="UpdateVideos" asp-route-id="@item.Id">Update Videos</a>
                 </td>
             </tr>
         }

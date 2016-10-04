@@ -13,6 +13,7 @@ namespace YoutubeOrganizer.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<UserVideo>().HasKey(t => new { t.UserID, t.VideoId });
             base.OnModelCreating(builder);
             // Customize the ASP.NET Identity model and override the defaults if needed.
             // For example, you can rename the ASP.NET Identity table names and more.
@@ -22,5 +23,6 @@ namespace YoutubeOrganizer.Data
         public DbSet<ChannelItem> ChannelItem { get; set; }
         public DbSet<SubscriptionItem> SubscriptionItem { get; set; }
         public DbSet<VideoItem> VideoItem { get; set; }
+        public DbSet<UserVideo> UserVideo { get; set; }
     }
 }

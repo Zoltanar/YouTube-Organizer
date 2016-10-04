@@ -1,17 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace YoutubeOrganizer.Models
 {
     public class ChannelItem
     {
-        /// <summary> Database ID </summary>
-        [Key]
-        public int DatabaseId { get; set; }
-        
         /// <summary>
         /// The ID that YouTube uses to uniquely identify the channel.
         /// </summary>
+        [Key]
         public string Id { get; set; }
 
         /// <summary>
@@ -24,11 +21,15 @@ namespace YoutubeOrganizer.Models
         ///method to upload new videos and the videos.delete method to delete previously
         ///uploaded videos.
         /// </summary>
-        //[JsonProperty("uploads")]
+
+        [Display(Name = "Upload Playlist")]
         public string UploadPlaylist { get; set; }//=> ContentDetails.RelatedPlaylists.Uploads;
 
         [Display(Name = "Number of videos")]
         public int NumberOfVideos { get; set; }
+
+        [NotMapped]
+        public string ChannelURL { get; set; }
 
         /// <summary>Returns a string that represents the current object.</summary>
         /// <returns>A string that represents the current object.</returns>

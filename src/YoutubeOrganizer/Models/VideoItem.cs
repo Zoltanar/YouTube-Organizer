@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Google.Apis.YouTube.v3.Data;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace YoutubeOrganizer.Models
 {
@@ -12,12 +10,11 @@ namespace YoutubeOrganizer.Models
     /// </summary>
     public class VideoItem
     {
-        [Key]
-        public int DatabaseId { get; set; }
 
         /// <summary>
         /// YouTube's unique identifier for this video.
         /// </summary>
+        [Key]
         public string Id { get; set; }
 
         /// <summary>
@@ -38,8 +35,9 @@ namespace YoutubeOrganizer.Models
         /// <summary>
         /// Location of video's thumbnail.
         /// </summary>
+        [Display(Name = "Thumbnail")]
         public string ThumbnailUrl { get; set; }
-        
+
         /// <summary>
         /// Height of video's thumbnail.
         /// </summary>
@@ -53,9 +51,26 @@ namespace YoutubeOrganizer.Models
         /// <summary>
         /// Publish date of video.
         /// </summary>
+        [Display(Name = "Published")]
         public DateTime? PublishDate { get; set; }
 
+        [NotMapped]
+        public bool Watched { get; set; }
+
+        [NotMapped, Display(Name = "Channel")]
+        public string ChannelTitle { get; set; }
+
+        [Display(Name = "Link")]
+        public string VideoURL { get; set; }
+
+        [NotMapped]
+        public SelectList Groupings { get; set; }
+
+        [NotMapped]
+        public string GroupingSelected { get; set; }
 
         public override string ToString() => $"Title= {Title} - ID= {Id}";
+
+
     }
 }

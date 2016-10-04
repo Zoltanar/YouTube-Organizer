@@ -112,7 +112,7 @@ namespace YoutubeOrganizer
                             GlobalVariables.UserLoginInfo =
                                 JsonConvert.DeserializeObject<Dictionary<string, ExternalLoginInfo>>(jsonContent);
                         }
-                        catch (JsonSerializationException e)
+                        catch (JsonSerializationException)
                         {
                             GlobalVariables.UserLoginInfo = new Dictionary<string, ExternalLoginInfo>();
                         }
