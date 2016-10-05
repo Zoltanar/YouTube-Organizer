@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using YoutubeOrganizer.Models;
 using YoutubeOrganizer.Models.AccountViewModels;
 using YoutubeOrganizer.Services;
@@ -54,7 +52,7 @@ namespace YoutubeOrganizer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
-               ViewData["ReturnUrl"] = returnUrl;
+            ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
                 // This doesn't count login failures towards account lockout
@@ -67,18 +65,15 @@ namespace YoutubeOrganizer.Controllers
                 }
                 if (result.RequiresTwoFactor)
                 {
-                    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+                    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, model.RememberMe });
                 }
                 if (result.IsLockedOut)
                 {
                     _logger.LogWarning(2, "User account locked out.");
                     return View("Lockout");
                 }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return View(model);
-                }
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return View(model);
             }
 
             // If we got this far, something failed, redisplay form
@@ -166,20 +161,11 @@ namespace YoutubeOrganizer.Controllers
             {
                 return RedirectToAction(nameof(Login));
             }
-
             // Sign in the user with this external login provider if the user already has a login.
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
             if (result.Succeeded)
             {
                 _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
-                //var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
-                //Debug.Write(Newtonsoft.Json.JsonConvert.SerializeObject(info,settings));
-                GlobalVariables.UserLoginInfo[info.Principal.FindFirstValue(ClaimTypes.Email)] = info;
-                using (var writer = new StreamWriter(new FileStream(GlobalVariables.TempSavedLoginInfoFile, FileMode.Create)))
-                {
-                    var jsonSettings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
-                    writer.Write(JsonConvert.SerializeObject(GlobalVariables.UserLoginInfo, jsonSettings));
-                }
                 return RedirectToLocal(returnUrl);
             }
             if (result.RequiresTwoFactor)
@@ -190,14 +176,11 @@ namespace YoutubeOrganizer.Controllers
             {
                 return View("Lockout");
             }
-            else
-            {
-                // If the user does not have an account, then ask the user to create an account.
-                ViewData["ReturnUrl"] = returnUrl;
-                ViewData["LoginProvider"] = info.LoginProvider;
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
-            }
+            // If the user does not have an account, then ask the user to create an account.
+            ViewData["ReturnUrl"] = returnUrl;
+            ViewData["LoginProvider"] = info.LoginProvider;
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
         }
 
         //
@@ -216,6 +199,7 @@ namespace YoutubeOrganizer.Controllers
                     return View("ExternalLoginFailure");
                 }
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                user.SetLoginInfo(info);
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -252,6 +236,7 @@ namespace YoutubeOrganizer.Controllers
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
+        #region Password
         //
         // GET: /Account/ForgotPassword
         [HttpGet]
@@ -323,12 +308,12 @@ namespace YoutubeOrganizer.Controllers
             if (user == null)
             {
                 // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+                return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
             }
             var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+                return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
             }
             AddErrors(result);
             return View();
@@ -342,7 +327,7 @@ namespace YoutubeOrganizer.Controllers
         {
             return View();
         }
-
+        #endregion
         //
         // GET: /Account/SendCode
         [HttpGet]
@@ -394,7 +379,7 @@ namespace YoutubeOrganizer.Controllers
                 await _smsSender.SendSmsAsync(await _userManager.GetPhoneNumberAsync(user), message);
             }
 
-            return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
+            return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, model.ReturnUrl, model.RememberMe });
         }
 
         //
@@ -437,11 +422,8 @@ namespace YoutubeOrganizer.Controllers
                 _logger.LogWarning(7, "User account locked out.");
                 return View("Lockout");
             }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid code.");
-                return View(model);
-            }
+            ModelState.AddModelError(string.Empty, "Invalid code.");
+            return View(model);
         }
 
         #region Helpers
@@ -454,21 +436,13 @@ namespace YoutubeOrganizer.Controllers
             }
         }
 
-        private Task<ApplicationUser> GetCurrentUserAsync()
-        {
-            return _userManager.GetUserAsync(HttpContext.User);
-        }
-
         private IActionResult RedirectToLocal(string returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
             }
-            else
-            {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
+            return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
         #endregion

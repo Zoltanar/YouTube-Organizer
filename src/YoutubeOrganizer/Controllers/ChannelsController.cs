@@ -22,7 +22,7 @@ namespace YoutubeOrganizer.Controllers
     public class ChannelsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private ExternalLoginInfo _info;
+        private readonly UserManager<ApplicationUser> _userManager;
         private const int YouTubeMaxResults = 50;
         private const string YouTubeShortURL = "https://youtu.be/";
         private const string YouTubeChannelPrepend = "https://youtube.com/channel/";
@@ -32,13 +32,14 @@ namespace YoutubeOrganizer.Controllers
         public ChannelsController(ApplicationDbContext context, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         /// <summary>
         /// Get user credential for currently logged in user.
         /// </summary>
         /// <returns>Google User Credential for logged in user</returns>
-        private UserCredential GetCredentialForApi()
+        private UserCredential GetCredentialForApi(ShortLoginInfo info)
         {
             var initializer = new GoogleAuthorizationCodeFlow.Initializer();
             using (var stream = new FileStream(GlobalVariables.SecretsFile, FileMode.Open, FileAccess.Read))
@@ -53,19 +54,16 @@ namespace YoutubeOrganizer.Controllers
             initializer.Scopes = new[] { YouTubeService.Scope.Youtube };
             var flow = new GoogleAuthorizationCodeFlow(initializer);
             //ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync(); //this doesnt work for some reason
-            TokenResponse token = new TokenResponse { RefreshToken = _info.AuthenticationTokens.First(x => x.Name == "refresh_token").Value };
-            return new UserCredential(flow, _info.ProviderKey, token);
+            TokenResponse token = new TokenResponse { RefreshToken = info.AuthenticationTokens.First(x => x.Name == "refresh_token").Value };
+            return new UserCredential(flow, info.ProviderKey, token);
         }
 
-        private YouTubeService CreateYouTubeService()
+        private async Task<YouTubeService> CreateYouTubeService()
         {
-            if (User != null)
-            {
-                _info = GlobalVariables.UserLoginInfo[User.Identity.Name];
-            }
-            if (_info == null || !_info.LoginProvider.Equals("Google")) return null;
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null || !info.LoginProvider.Equals("Google")) return null;
             //get user credential and initialize youtube service
-            var credential = GetCredentialForApi();
+            var credential = GetCredentialForApi(info);
             return new YouTubeService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = credential,
@@ -78,23 +76,15 @@ namespace YoutubeOrganizer.Controllers
         /// </summary>
         public async Task<IActionResult> GetVideos()
         {
-            if (User != null)
-            {
-                _info = GlobalVariables.UserLoginInfo[User.Identity.Name];
-            }
-            if (_info == null || !_info.LoginProvider.Equals("Google")) return RedirectToAction("Index"); //TODO should return not logged in through google
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null || !info.LoginProvider.Equals("Google")) return RedirectToAction("Index"); //TODO should return not logged in through google
             //get user credential and initialize youtube service
-            var credential = GetCredentialForApi();
-            var youtubeService = new YouTubeService(new BaseClientService.Initializer
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = "YoutubeOrganizer"
-            });
+            var youTubeService = await CreateYouTubeService();
 
-            List<SubscriptionItem> subs = _context.SubscriptionItem.Where(x => x.UserId.Equals(_info.ProviderKey)).ToList();
+            List<SubscriptionItem> subs = _context.SubscriptionItem.Where(x => x.UserId.Equals(info.ProviderKey)).ToList();
             var presentVideos = await _context.VideoItem.Select(x => x.Id).ToListAsync();
             var channels = _context.ChannelItem.Where(channel => subs.Find(sub => sub.ChannelId.Equals(channel.Id)) != null).ToList();
-            await FetchVideoIdsByChannel(youtubeService, channels, presentVideos);
+            await FetchVideoIdsByChannel(youTubeService, channels, presentVideos);
             //prepare request
             return RedirectToAction("Index");
         }
@@ -116,7 +106,7 @@ namespace YoutubeOrganizer.Controllers
                 return NotFound();
             }
             var presentVideos = await _context.VideoItem.Select(x => x.Id).ToListAsync();
-            var youTubeService = CreateYouTubeService();
+            var youTubeService = await CreateYouTubeService();
             if(youTubeService == null) return RedirectToAction("Index"); //TODO should return error
             await FetchVideoIdsByChannel(youTubeService, new[] { channelItem }, presentVideos);
             return RedirectToAction("Index");
@@ -139,7 +129,7 @@ namespace YoutubeOrganizer.Controllers
                 return NotFound();
             }
             var presentVideos = await _context.VideoItem.Select(x => x.Id).ToListAsync();
-            var youTubeService = CreateYouTubeService();
+            var youTubeService = await CreateYouTubeService();
             await FetchVideoIdsByChannel(youTubeService, new[] { channelItem }, presentVideos);
             return RedirectToAction($"Details/{channelItem.Id}");
         }
@@ -225,8 +215,9 @@ namespace YoutubeOrganizer.Controllers
         /// </summary>
         public async Task<IActionResult> GetSubscriptions()
         {
-            var youTubeService = CreateYouTubeService();
+            var youTubeService = await CreateYouTubeService();
             if (youTubeService == null) return RedirectToAction("Index"); //TODO should return not logged in through google
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext); //TODO add these to a custom youtube service
             //prepare request
             var request = youTubeService.Subscriptions.List("snippet");
             request.Mine = true;
@@ -261,8 +252,8 @@ namespace YoutubeOrganizer.Controllers
                 } while (taken < croppedChannelList.Count);
                 _context.ChannelItem.AddRange(channelList);
             }
-            SubscriptionItem[] subList = channelIDs.Select(channelID => new SubscriptionItem { ChannelId = channelID, UserId = _info.ProviderKey }).ToArray(); //list of user's current subs
-            IQueryable<SubscriptionItem> oldSubList = _context.SubscriptionItem.Where(x => x.UserId.Equals(_info.ProviderKey)); //list of user's subs in db
+            SubscriptionItem[] subList = channelIDs.Select(channelID => new SubscriptionItem { ChannelId = channelID, UserId = info.ProviderKey }).ToArray(); //list of user's current subs
+            IQueryable<SubscriptionItem> oldSubList = _context.SubscriptionItem.Where(x => x.UserId.Equals(info.ProviderKey)); //list of user's subs in db
             IEnumerable<SubscriptionItem> newSubList = subList.Except(oldSubList); //list of subs that are not in db
             IQueryable<SubscriptionItem> deletedSubList = oldSubList.Except(subList); //list of subs in db that are no longer user's subs
             _context.SubscriptionItem.AddRange(newSubList);
@@ -274,12 +265,9 @@ namespace YoutubeOrganizer.Controllers
         // GET: ChannelItems
         public async Task<IActionResult> Index()
         {
-            if (User?.Identity.Name != null)
-            {
-                _info = GlobalVariables.UserLoginInfo.Keys.Contains(User.Identity.Name) ? GlobalVariables.UserLoginInfo[User.Identity.Name] : null;
-            }
-            if (_info == null) return View(new List<ChannelItem>()); //TODO should return not logged in or not logged in with google
-            List<SubscriptionItem> subs = await _context.SubscriptionItem.Where(x => x.UserId.Equals(_info.ProviderKey)).ToListAsync();
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null) return View(new List<ChannelItem>()); //TODO should return not logged in or not logged in with google
+            List<SubscriptionItem> subs = await _context.SubscriptionItem.Where(x => x.UserId.Equals(info.ProviderKey)).ToListAsync();
 
             return View(_context.ChannelItem.Where(channel => subs.Find(sub => sub.ChannelId.Equals(channel.Id)) != null));
         }
@@ -321,12 +309,9 @@ namespace YoutubeOrganizer.Controllers
 
         public async Task<IActionResult> History()
         {
-            if (User != null)
-            {
-                _info = GlobalVariables.UserLoginInfo[User.Identity.Name];
-            }
-            if (_info == null) return RedirectToAction("Index"); //TODO should return not logged in
-            List<string> videoIDs = await _context.UserVideo.Where(x => x.UserID.Equals(_info.ProviderKey) && x.Watched).Select(x => x.VideoId).ToListAsync();
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null) return RedirectToAction("Index"); //TODO should return not logged in
+            List<string> videoIDs = await _context.UserVideo.Where(x => x.UserID.Equals(info.ProviderKey) && x.Watched).Select(x => x.VideoId).ToListAsync();
             List<VideoItem> videos = await _context.VideoItem.Where(x => videoIDs.Contains(x.Id)).OrderByDescending(x => x.PublishDate).ToListAsync();
 
             var channels = await _context.ChannelItem.ToListAsync();
@@ -341,33 +326,6 @@ namespace YoutubeOrganizer.Controllers
             });
             return View(listForViewing);
 
-        }
-
-
-        /// <summary>
-        /// DO NOT USE. Get User's watched videos. Currently returns zero items due to YouTube API changes. 
-        /// </summary>
-        /// <returns></returns>
-        [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
-        public async Task<IActionResult> GetHistoryList()
-        {
-            return NotFound();
-
-            var youTubeService = CreateYouTubeService();
-            var request = youTubeService.PlaylistItems.List("contentDetails");
-            request.PlaylistId = "HL";
-            var response = await request.ExecuteAsync();
-            if (response.Items.Count == 0) return RedirectToAction("Index");
-            //else etc
-            return RedirectToAction("Index");
-        }
-
-        public async Task<string> GetUserIdYouTube(YouTubeService youTubeService)
-        {
-            var request = youTubeService.Channels.List("id");
-            request.Mine = true;
-            var response = await request.ExecuteAsync();
-            return response.Items.FirstOrDefault().Id;
         }
     }
 }

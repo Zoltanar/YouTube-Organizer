@@ -1,16 +1,13 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.YouTube.v3;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using YoutubeOrganizer.Data;
 using YoutubeOrganizer.Models;
 using YoutubeOrganizer.Services;
@@ -91,33 +88,6 @@ namespace YoutubeOrganizer
                 ClientSecrets secrets = GoogleClientSecrets.Load(stream).Secrets;
                 googleOptions.ClientId = secrets.ClientId;
                 googleOptions.ClientSecret = secrets.ClientSecret;
-            }
-            GlobalVariables.UserLoginInfo = new Dictionary<string, ExternalLoginInfo>();
-            if (File.Exists(GlobalVariables.TempSavedLoginInfoFile))
-            {
-                using (
-                    var reader =
-                        new StreamReader(new FileStream(GlobalVariables.TempSavedLoginInfoFile, FileMode.Open,
-                            FileAccess.Read)))
-                {
-                    string jsonContent = reader.ReadToEnd();
-                    if (jsonContent.Length == 0)
-                    {
-                        GlobalVariables.UserLoginInfo = new Dictionary<string, ExternalLoginInfo>();
-                    }
-                    else
-                    {
-                        try
-                        {
-                            GlobalVariables.UserLoginInfo =
-                                JsonConvert.DeserializeObject<Dictionary<string, ExternalLoginInfo>>(jsonContent);
-                        }
-                        catch (JsonSerializationException)
-                        {
-                            GlobalVariables.UserLoginInfo = new Dictionary<string, ExternalLoginInfo>();
-                        }
-                    }
-                }
             }
             app.UseGoogleAuthentication(googleOptions);
 
