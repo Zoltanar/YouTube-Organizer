@@ -1,4 +1,7 @@
-@model IEnumerable<VideoItem>
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Routing
+@using Sakura.AspNetCore
+@model IPagedList<VideoItem>
 
 @{
     ViewData["Title"] = "Index";
@@ -7,23 +10,46 @@
 
 <h2>Index</h2>
 
+@{/*TODO make page buttons into partial section and call repeatedly*/}
+<div align="left">
+    @{
+        int lowerBound0 = Math.Max(1, Model.PageIndex - 5);
+        for (int page = lowerBound0; page < Model.PageIndex; page++)
+        {@Html.ActionLink(page + " ", "Index", "Videos", new RouteValueDictionary { { "Page", page } })}
+    }
+</div>
+<div align="center" style="font-weight: bold">
+    @if (Model.IsFirstPage())
+    {@Html.ActionLink("First", "Index", "Videos")}
+    else if (Model.IsLastPage())
+    {@Html.ActionLink("Last", "Index", "Videos", new RouteValueDictionary { { "Page", Model.PageIndex } })}
+    else
+    {@Html.ActionLink(Model.PageIndex.ToString(), "Index", "Videos", new RouteValueDictionary { { "Page", Model.PageIndex } })}
+</div>
+<div align="right">
+    @{
+        int upperBound0 = Math.Min(Model.TotalPage, Model.PageIndex + 5);
+        for (int page = Model.PageIndex + 1; page < upperBound0; page++)
+        {@Html.ActionLink(page + " ", "Index", "Videos", new RouteValueDictionary { { "Page", page } })}
+    }
+</div>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.ChannelTitle)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().ChannelTitle)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Duration)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Duration)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.PublishDate)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().PublishDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ThumbnailUrl)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().ThumbnailUrl)
             </th>
         </tr>
     </thead>
@@ -40,3 +66,25 @@
         }
     </tbody>
 </table>
+<div align="left">
+    @{
+        int lowerBound = Math.Max(1, Model.PageIndex - 5);
+        for (int page = lowerBound; page < Model.PageIndex; page++)
+        {@Html.ActionLink(page + " ", "Index", "Videos", new RouteValueDictionary { { "Page", page } })}
+    }
+</div>
+<div align="center" style="font-weight: bold">
+    @if (Model.IsFirstPage())
+    {@Html.ActionLink("First", "Index", "Videos")}
+    else if (Model.IsLastPage())
+    {@Html.ActionLink("Last", "Index", "Videos", new RouteValueDictionary { { "Page", Model.PageIndex } })}
+    else {@Html.ActionLink(Model.PageIndex.ToString(), "Index", "Videos", new RouteValueDictionary { { "Page", Model.PageIndex } })}
+</div>
+<div align="right">
+    @{
+        int upperBound = Math.Min(Model.TotalPage, Model.PageIndex + 5);
+        for (int page = Model.PageIndex + 1; page < upperBound; page++)
+        {@Html.ActionLink(" " + page, "Index", "Videos", new RouteValueDictionary { { "Page", page } })}
+    }
+</div>
+
