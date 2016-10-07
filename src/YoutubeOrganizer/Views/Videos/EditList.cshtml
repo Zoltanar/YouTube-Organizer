@@ -1,0 +1,21 @@
+@using System.Threading.Tasks
+@model YoutubeOrganizer.Controllers.MyPagedList<VideoItem>
+
+@{
+    ViewData["Title"] = "EditList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>EditList</h2>
+    @using (Html.BeginForm())
+    {
+        for (int i = 0; i < Model.Count; i++)
+        {
+            <h4>Number: @i</h4>
+            @:ID: @Html.EditorFor(m  => m[i].Id)
+            @:Watched: @Html.EditorFor(m => m[i].Watched)
+
+
+        }
+        <input type="submit" value="Save" />
+    }

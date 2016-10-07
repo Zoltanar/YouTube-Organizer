@@ -22,60 +22,57 @@ else
 {
     @Html.DropDownList("ddGrouping", new List<SelectListItem> { new SelectListItem { Text = "No Groupings Found", Value = "none" } });
 }
-<div>
-    <h4>VideoItem</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.ChannelId)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.ChannelId)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Duration)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Duration)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.PublishDate)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.PublishDate)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.ThumbnailHeight)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.ThumbnailHeight)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.ThumbnailUrl)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.ThumbnailUrl)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.ThumbnailWidth)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.ThumbnailWidth)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.VideoURL)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.VideoURL)
-        </dd>
-    </dl>
-</div>
+<form asp-action="EditDetails">
+    <div>
+        <h4>VideoItem</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.ChannelId)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.ChannelId)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Duration)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Duration)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.PublishDate)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.PublishDate)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.ThumbnailUrl)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.ThumbnailUrl)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Title)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Title)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.VideoURL)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.VideoURL)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Watched)
+            </dt>
+            <dd>
+                @Html.EditorFor(model => model.Watched)
+            </dd>
+        </dl>
+    </div>
+    <input type="submit" value="Save Changes" />
+</form>
 <div>
     <a asp-action="Index">Back to List</a>
 </div>

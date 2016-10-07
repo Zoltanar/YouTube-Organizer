@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using YoutubeOrganizer.Data;
 using YoutubeOrganizer.Models;
 using Sakura.AspNetCore;
+using YoutubeOrganizer.Controllers;
 
 namespace YoutubeOrganizer
 {
@@ -48,6 +49,7 @@ namespace YoutubeOrganizer
                                             orderby video.PublishDate descending
                                             select new VideoItem
                                             {
+                                                Id = video.Id,
                                                 ChannelTitle = channel.Title,
                                                 Title = video.Title,
                                                 Duration = video.Duration,
@@ -58,6 +60,25 @@ namespace YoutubeOrganizer
             return await liveResults.ToPagedListAsync(pageSize, pageNumber);
         }
 
+
+        public static async Task<MyPagedList<VideoItem>> GetMyPagedVideosAsync(this ApplicationDbContext context, int pageNumber = 1, int pageSize = 25)
+        {
+            IQueryable<VideoItem> liveResults = from video in context.VideoItem
+                                                join channel in context.ChannelItem on video.ChannelId equals channel.Id
+                                                orderby video.PublishDate descending
+                                                select new VideoItem
+                                                {
+                                                    Id = video.Id,
+                                                    ChannelTitle = channel.Title,
+                                                    Title = video.Title,
+                                                    Duration = video.Duration,
+                                                    PublishDate = video.PublishDate,
+                                                    ThumbnailUrl = video.ThumbnailUrl,
+                                                    VideoURL = video.VideoURL
+                                                };
+            var pagedList = await liveResults.ToPagedListAsync(pageSize, pageNumber);
+            return (MyPagedList<VideoItem>)pagedList;
+        }
 
         public static async Task<ShortLoginInfo> GetCurrentLoginInfoAsync(this UserManager<ApplicationUser> userManager, HttpContext httpContext)
         {

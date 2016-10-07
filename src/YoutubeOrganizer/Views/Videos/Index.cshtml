@@ -1,5 +1,4 @@
 @using System.Threading.Tasks
-@using Microsoft.AspNetCore.Routing
 @using Sakura.AspNetCore
 @model IPagedList<VideoItem>
 
@@ -9,30 +8,8 @@
 }
 
 <h2>Index</h2>
+@await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", Model)
 
-@{/*TODO make page buttons into partial section and call repeatedly*/}
-<div align="left">
-    @{
-        int lowerBound0 = Math.Max(1, Model.PageIndex - 5);
-        for (int page = lowerBound0; page < Model.PageIndex; page++)
-        {@Html.ActionLink(page + " ", "Index", "Videos", new RouteValueDictionary { { "Page", page } })}
-    }
-</div>
-<div align="center" style="font-weight: bold">
-    @if (Model.IsFirstPage())
-    {@Html.ActionLink("First", "Index", "Videos")}
-    else if (Model.IsLastPage())
-    {@Html.ActionLink("Last", "Index", "Videos", new RouteValueDictionary { { "Page", Model.PageIndex } })}
-    else
-    {@Html.ActionLink(Model.PageIndex.ToString(), "Index", "Videos", new RouteValueDictionary { { "Page", Model.PageIndex } })}
-</div>
-<div align="right">
-    @{
-        int upperBound0 = Math.Min(Model.TotalPage, Model.PageIndex + 5);
-        for (int page = Model.PageIndex + 1; page < upperBound0; page++)
-        {@Html.ActionLink(page + " ", "Index", "Videos", new RouteValueDictionary { { "Page", page } })}
-    }
-</div>
 <table class="table">
     <thead>
         <tr>
@@ -49,42 +26,26 @@
                 @Html.DisplayNameFor(model => model.FirstOrDefault().PublishDate)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Watched)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.FirstOrDefault().ThumbnailUrl)
             </th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
-        {
+            {
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.ChannelTitle)</td>
-                <td>@Html.DisplayFor(modelItem => item.Title)</td>
-                <td>@Html.DisplayFor(modelItem => item.Duration)</td>
+                <td>*<a asp-controller="Videos" asp-action="Details" asp-route-id="@item.Id">@item.Title</a></td>
+                <td>@Html.DisplayFor(modelItem => item.DisplayDuration)</td>
                 <td>@Html.DisplayFor(modelItem => item.PublishDate)</td>
-                <td><a href="@item.VideoURL"><img src="@item.ThumbnailUrl" alt="Thumbnail" style="width:120px;height:90px;"></a></td>
+                <td>@Html.DisplayFor(modelItem => item.Watched)</td>
+                <td><a href="@item.VideoURL"><img src="@item.ThumbnailUrl" alt="Thumbnail" style="width: 120px; height: 90px;"></a></td>
             </tr>
         }
     </tbody>
 </table>
-<div align="left">
-    @{
-        int lowerBound = Math.Max(1, Model.PageIndex - 5);
-        for (int page = lowerBound; page < Model.PageIndex; page++)
-        {@Html.ActionLink(page + " ", "Index", "Videos", new RouteValueDictionary { { "Page", page } })}
-    }
-</div>
-<div align="center" style="font-weight: bold">
-    @if (Model.IsFirstPage())
-    {@Html.ActionLink("First", "Index", "Videos")}
-    else if (Model.IsLastPage())
-    {@Html.ActionLink("Last", "Index", "Videos", new RouteValueDictionary { { "Page", Model.PageIndex } })}
-    else {@Html.ActionLink(Model.PageIndex.ToString(), "Index", "Videos", new RouteValueDictionary { { "Page", Model.PageIndex } })}
-</div>
-<div align="right">
-    @{
-        int upperBound = Math.Min(Model.TotalPage, Model.PageIndex + 5);
-        for (int page = Model.PageIndex + 1; page < upperBound; page++)
-        {@Html.ActionLink(" " + page, "Index", "Videos", new RouteValueDictionary { { "Page", page } })}
-    }
-</div>
+@await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", Model)
 
