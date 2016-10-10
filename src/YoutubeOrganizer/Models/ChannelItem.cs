@@ -14,7 +14,7 @@ namespace YoutubeOrganizer.Models
         /// <summary>
         /// The channel's Title
         /// </summary>
-        public string Title { get; set; }
+        public string ChannelTitle { get; set; }
 
         /// <summary>
         /// The ID of the playlist that contains the channel"s uploaded videos. Use the videos.insert
@@ -34,6 +34,6 @@ namespace YoutubeOrganizer.Models
         /// <summary>Returns a string that represents the current object.</summary>
         /// <returns>A string that represents the current object.</returns>
         /// <filterpriority>2</filterpriority>
-        public override string ToString() => $"Title= {Title} - ID= {Id}";
+        public override string ToString() => $"Title= {ChannelTitle} - ID= {Id}";
     }
 }

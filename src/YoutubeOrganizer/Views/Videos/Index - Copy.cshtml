@@ -1,0 +1,45 @@
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Routing
+@model MyPagedList<VideoItem>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Videos from Subscriptions</h2>
+@using (Html.BeginForm())
+{
+    <input type="submit" style="float:right" value="Save Changes" />
+    @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().ChannelTitle)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Title)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Duration)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().PublishDate)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Watched)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().ThumbnailUrl)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(m => m[i].ChannelTitle)</td>
+                    <td>
+                        @Html.HiddenFor(m => m[i].Id)
+                        @Html.ActionLink(Model[i].Title,"Details","Videos",new RouteValueDictionary { {"Id",Model[i].Id} })
+                </td>
+                <td>@Html.DisplayFor(m => m[i].DisplayDuration)</td>
+                <td>@Html.DisplayFor(m => m[i].PublishDate)</td>
+                <td>@Html.EditorFor(m => m[i].Watched)</td>
+                <td><a href="@Model[i].VideoURL"><img src="@Model[i].ThumbnailUrl" alt="Thumbnail" style="width: 120px; height: 90px;"></a></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+    @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+    <input type="submit" style="float:right" value="Save Changes" />
+}

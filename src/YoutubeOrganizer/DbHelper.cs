@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -7,79 +6,114 @@ using Microsoft.EntityFrameworkCore;
 using YoutubeOrganizer.Data;
 using YoutubeOrganizer.Models;
 using Sakura.AspNetCore;
-using YoutubeOrganizer.Controllers;
 
 namespace YoutubeOrganizer
 {
+    /// <summary>
+    /// Static class containing methods for interacting with databases.
+    /// </summary>
     public static class DbHelper
     {
-        /// <summary>
+       /// <summary>
         /// Return list of videos sorted by PublishDate.
         /// </summary>
         /// <param name="context">Context containing database with videos</param>
-        /// <returns></returns>
-        public static async Task<IEnumerable<VideoItem>> GetVideosAsync(this ApplicationDbContext context)
-        {
-            IQueryable<VideoItem> results = from video in context.VideoItem
-                                            join channel in context.ChannelItem on video.ChannelId equals channel.Id
-                                            orderby video.PublishDate descending
-                                            select new VideoItem
-                                            {
-                                                ChannelTitle = channel.Title,
-                                                Title = video.Title,
-                                                Duration = video.Duration,
-                                                PublishDate = video.PublishDate,
-                                                ThumbnailUrl = video.ThumbnailUrl,
-                                                VideoURL = video.VideoURL
-                                            };
-            return await results.ToListAsync();
-        }
-
-        /// <summary>
-        /// Return list of videos sorted by PublishDate.
-        /// </summary>
-        /// <param name="context">Context containing database with videos</param>
+        /// <param name="userInfo">Login Info of user</param>
         /// <param name="pageNumber">The number of the page to be returned</param>
         /// <param name="pageSize">The number of results per page</param>
         /// <returns></returns>
-        public static async Task<PagedList<IQueryable<VideoItem>, VideoItem>> GetPagedVideosAsync(this ApplicationDbContext context, int pageNumber = 1, int pageSize = 25)
+        public static async Task<MyPagedList<VideoItem>> GetMyPagedVideosAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, int pageNumber = 1, int pageSize = 25)
         {
-            IQueryable<VideoItem> liveResults = from video in context.VideoItem
-                                            join channel in context.ChannelItem on video.ChannelId equals channel.Id
-                                            orderby video.PublishDate descending
-                                            select new VideoItem
-                                            {
-                                                Id = video.Id,
-                                                ChannelTitle = channel.Title,
-                                                Title = video.Title,
-                                                Duration = video.Duration,
-                                                PublishDate = video.PublishDate,
-                                                ThumbnailUrl = video.ThumbnailUrl,
-                                                VideoURL = video.VideoURL
-                                            };
-            return await liveResults.ToPagedListAsync(pageSize, pageNumber);
-        }
+            var userVideoResults = await context.UserVideo.Where(x => x.UserID.Equals(userInfo.ProviderKey)).ToListAsync();
 
-
-        public static async Task<MyPagedList<VideoItem>> GetMyPagedVideosAsync(this ApplicationDbContext context, int pageNumber = 1, int pageSize = 25)
-        {
             IQueryable<VideoItem> liveResults = from video in context.VideoItem
                                                 join channel in context.ChannelItem on video.ChannelId equals channel.Id
                                                 orderby video.PublishDate descending
                                                 select new VideoItem
                                                 {
                                                     Id = video.Id,
-                                                    ChannelTitle = channel.Title,
+                                                    ChannelTitle = channel.ChannelTitle,
                                                     Title = video.Title,
                                                     Duration = video.Duration,
                                                     PublishDate = video.PublishDate,
                                                     ThumbnailUrl = video.ThumbnailUrl,
-                                                    VideoURL = video.VideoURL
+                                                    VideoURL = video.VideoURL,
+                                                    Watched = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(video.Id)).Watched
                                                 };
             var pagedList = await liveResults.ToPagedListAsync(pageSize, pageNumber);
             return (MyPagedList<VideoItem>)pagedList;
         }
 
+        /// <summary>
+        /// Return list of videos by channel that contain a string or template, sorted by PublishDate.
+        /// </summary>
+        /// <param name="context">Context containing database with videos</param>
+        /// <param name="userInfo">Login Info of user</param>
+        /// <param name="channelId">ID of channel</param>
+        /// <param name="groupingSelected">String or template which videos should contain or match</param>
+        /// <param name="pageNumber">The number of the page to be returned</param>
+        /// <param name="pageSize">The number of results per page</param>
+        /// <returns></returns>
+        public static async Task<MyPagedList<VideoItem>> GetMyPagedVideosByGroupingAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, string channelId, string groupingSelected, int pageNumber = 1, int pageSize = 25)
+        {
+            var userVideoResults = await context.UserVideo.Where(x => x.UserID.Equals(userInfo.ProviderKey)).ToListAsync();
+
+            IQueryable<VideoItem> liveResults = from video in context.VideoItem
+                                                join channel in context.ChannelItem on video.ChannelId equals channel.Id
+                                                where video.Title.Contains(groupingSelected) && video.ChannelId.Equals(channelId)
+                                                orderby video.PublishDate descending
+                                                select new VideoItem
+                                                {
+                                                    Id = video.Id,
+                                                    ChannelTitle = channel.ChannelTitle,
+                                                    Title = video.Title,
+                                                    Duration = video.Duration,
+                                                    PublishDate = video.PublishDate,
+                                                    ThumbnailUrl = video.ThumbnailUrl,
+                                                    VideoURL = video.VideoURL,
+                                                    Watched = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(video.Id)).Watched
+                                                };
+            var pagedList = await liveResults.ToPagedListAsync(pageSize, pageNumber);
+            return (MyPagedList<VideoItem>)pagedList;
+        }
+
+        /// <summary>
+        /// Get a single video and its relation to user.
+        /// </summary>
+        /// <param name="context">Context containing database with videos</param>
+        /// <param name="userInfo">Login Info of user</param>
+        /// <param name="videoId">ID of video</param>
+        /// <returns></returns>
+        public static async Task<VideoItem> GetSingleVideoItem(this ApplicationDbContext context,ShortLoginInfo userInfo, string videoId)
+        {
+            var userVideoResults = await context.UserVideo.Where(x => x.UserID.Equals(userInfo.ProviderKey)).ToListAsync();
+
+            IQueryable<VideoItem> liveResults = from video in context.VideoItem
+                                                join channel in context.ChannelItem on video.ChannelId equals channel.Id
+                                                where video.Id.Equals(videoId)
+                                                orderby video.PublishDate descending
+                                                select new VideoItem
+                                                {
+                                                    Id = video.Id,
+                                                    ChannelId = channel.Id,
+                                                    ChannelTitle = channel.ChannelTitle,
+                                                    Title = video.Title,
+                                                    Duration = video.Duration,
+                                                    PublishDate = video.PublishDate,
+                                                    ThumbnailUrl = video.ThumbnailUrl,
+                                                    VideoURL = video.VideoURL,
+                                                    Watched = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(video.Id)).Watched
+                                                };
+            var result = await liveResults.FirstAsync();
+            return result;
+        }
+
+        /// <summary>
+        /// Get login info for current user from database.
+        /// </summary>
+        /// <param name="userManager">Database holding user information</param>
+        /// <param name="httpContext">Current context containing current user info</param>
+        /// <returns></returns>
         public static async Task<ShortLoginInfo> GetCurrentLoginInfoAsync(this UserManager<ApplicationUser> userManager, HttpContext httpContext)
         {
             var user = await userManager.GetUserAsync(httpContext.User);

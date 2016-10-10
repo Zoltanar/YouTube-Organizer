@@ -10,9 +10,9 @@
 
 @if (Model.Title.Contains("-"))
 {
-    RouteValueDictionary routeValues = new RouteValueDictionary {{"ChannelId", Model.ChannelId}, {"GroupingSelected", Model.GroupingSelected} };
-    using (Html.BeginForm("DisplayGroups", "Videos", routeValues, FormMethod.Post))
+    using (Html.BeginForm("DisplayGroups", "Videos"))
     {
+        @Html.HiddenFor(m=>m.ChannelId)
         @Html.DropDownListFor(m => m.GroupingSelected, Model.Groupings, "Select Grouping")
 
         <input id="submit1" type="submit" value="Send" />
@@ -28,16 +28,16 @@ else
         <hr />
         <dl class="dl-horizontal">
             <dt>
-                @Html.DisplayNameFor(model => model.ChannelId)
+                @Html.DisplayNameFor(model => model.ChannelTitle)
             </dt>
             <dd>
-                @Html.DisplayFor(model => model.ChannelId)
+                @Html.DisplayFor(model => model.ChannelTitle)
             </dd>
             <dt>
                 @Html.DisplayNameFor(model => model.Duration)
             </dt>
             <dd>
-                @Html.DisplayFor(model => model.Duration)
+                @Html.DisplayFor(model => model.DisplayDuration)
             </dd>
             <dt>
                 @Html.DisplayNameFor(model => model.PublishDate)
@@ -46,28 +46,22 @@ else
                 @Html.DisplayFor(model => model.PublishDate)
             </dd>
             <dt>
-                @Html.DisplayNameFor(model => model.ThumbnailUrl)
-            </dt>
-            <dd>
-                @Html.DisplayFor(model => model.ThumbnailUrl)
-            </dd>
-            <dt>
                 @Html.DisplayNameFor(model => model.Title)
             </dt>
             <dd>
                 @Html.DisplayFor(model => model.Title)
             </dd>
             <dt>
-                @Html.DisplayNameFor(model => model.VideoURL)
-            </dt>
-            <dd>
-                @Html.DisplayFor(model => model.VideoURL)
-            </dd>
-            <dt>
                 @Html.DisplayNameFor(model => model.Watched)
             </dt>
             <dd>
                 @Html.EditorFor(model => model.Watched)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.VideoURL)
+            </dt>
+            <dd>
+                <a href="@Model.VideoURL"><img src="@Model.ThumbnailUrl" alt="Thumbnail" style="width: 120px; height: 90px;"></a>
             </dd>
         </dl>
     </div>

@@ -1,51 +1,94 @@
 @using System.Threading.Tasks
-@using Sakura.AspNetCore
-@model IPagedList<VideoItem>
+@using Microsoft.AspNetCore.Routing
+@model MyPagedList<VideoItem>
 
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Index</h2>
-@await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", Model)
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().ChannelTitle)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Duration)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().PublishDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Watched)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().ThumbnailUrl)
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+<link rel="stylesheet" href="~/css/YouTube.css">
+<link rel="stylesheet" href="~/css/YouTube2.css">
+<h2>Videos from Subscriptions</h2>
+@using (Html.BeginForm())
+{
+    <input type="submit" style="float:right" value="Save Changes" />
+    @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+    <div id="video-grid-holder" class="grid-holder">
+        <ul class="channels-browse-content-grid branded-page-gutter-padding grid-lockups-container">
+            @for (int i = 0; i < Model.Count; i++)
             {
+                <li class="channels-content-item yt-shelf-grid-item">
+                    <div class="yt-lockup clearfix  yt-lockup-video yt-lockup-grid vve-check"
+                         data-context-item-id="@Model[i].Id">
+                        <div class="yt-lockup-dismissable">
+                            <div class="yt-lockup-thumbnail">
+                                <span class=" spf-link ux-thumb-wrap contains-addto">
+                                    <a href="@Model[i].VideoURL" class="yt-uix-sessionlink" aria-hidden="true">
+                                        <span class="video-thumb  yt-thumb yt-thumb-196">
+                                            <span class="yt-thumb-default">
+                                                <span class="yt-thumb-clip">
+                                                    <img alt="" aria-hidden="true" width="196" src="@Model[i].ThumbnailUrl">
+                                                    <span class="vertical-align"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </a>
+                                    <span class="video-time" aria-hidden="true">
+                                        <span aria-label="@Model[i].Duration">
+                                            @Model[i].DisplayDuration
+                                        </span>
+                                    </span>
+                                    <span class="yt-uix-button-arrow yt-sprite">
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="yt-lockup-content">
+                                <h3 class="yt-lockup-title">
+                                    <a class="yt-uix-sessionlink yt-uix-tile-link  spf-link  yt-ui-ellipsis yt-ui-ellipsis-2" dir="ltr" title="@Model[i].Title" href="@Model[i].VideoURL">@Model[i].Title</a>
+                                    <span class="accessible-description">- Duration: @Model[i].DisplayDuration</span>
+                                </h3>
+                                <div class="yt-lockup-meta">
+                                    <ul class="yt-lockup-meta-info">
+                                        <li>Number of Views</li>
+                                        <li>@Model[i].TimeSince</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+    <table class="table">
+        <thead>
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.ChannelTitle)</td>
-                <td>*<a asp-controller="Videos" asp-action="Details" asp-route-id="@item.Id">@item.Title</a></td>
-                <td>@Html.DisplayFor(modelItem => item.DisplayDuration)</td>
-                <td>@Html.DisplayFor(modelItem => item.PublishDate)</td>
-                <td>@Html.DisplayFor(modelItem => item.Watched)</td>
-                <td><a href="@item.VideoURL"><img src="@item.ThumbnailUrl" alt="Thumbnail" style="width: 120px; height: 90px;"></a></td>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().ChannelTitle)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Title)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Duration)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().PublishDate)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Watched)</th>
+                <th>@Html.DisplayNameFor(model => model.FirstOrDefault().ThumbnailUrl)</th>
             </tr>
-        }
-    </tbody>
-</table>
-@await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", Model)
-
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(m => m[i].ChannelTitle)</td>
+                    <td>
+                        @Html.HiddenFor(m => m[i].Id)
+                        @Html.ActionLink(Model[i].Title, "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })
+                    </td>
+                    <td>@Html.DisplayFor(m => m[i].DisplayDuration)</td>
+                    <td>@Html.DisplayFor(m => m[i].PublishDate)</td>
+                    <td>@Html.EditorFor(m => m[i].Watched)</td>
+                    <td><a href="@Model[i].VideoURL"><img src="@Model[i].ThumbnailUrl" alt="Thumbnail" style="width: 120px; height: 90px;"></a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+    <input type="submit" style="float:right" value="Save Changes" />
+}

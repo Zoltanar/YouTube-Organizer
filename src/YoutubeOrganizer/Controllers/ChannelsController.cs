@@ -280,7 +280,7 @@ namespace YoutubeOrganizer.Controllers
                 list.Add(new ChannelItem
                 {
                     Id = channel.Id,
-                    Title = channel.Snippet.Title,
+                    ChannelTitle = channel.Snippet.Title,
                     UploadPlaylist = channel.ContentDetails.RelatedPlaylists.Uploads
                 });
             }
@@ -317,7 +317,7 @@ namespace YoutubeOrganizer.Controllers
             var channels = await _context.ChannelItem.ToListAsync();
             IEnumerable<VideoItem> listForViewing = videos.Join(channels, video => video.ChannelId, channel => channel.Id, (video, channel) => new VideoItem
             {
-                ChannelTitle = channel.Title,
+                ChannelTitle = channel.ChannelTitle,
                 Title = video.Title,
                 Duration = video.Duration,
                 PublishDate = video.PublishDate,
