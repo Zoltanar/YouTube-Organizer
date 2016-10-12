@@ -1,9 +1,9 @@
-@using System.Threading.Tasks
+﻿@using System.Threading.Tasks
 @using Microsoft.AspNetCore.Routing
 @model MyPagedList<VideoItem>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "WatchedVideos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,8 +11,8 @@
 <link rel="stylesheet" href="~/css/YouTube2.css">
 <div style="padding-top: 100px"></div>
 <h2>Videos from Subscriptions</h2>
-@Html.ActionLink("Watched Videos","WatchedVideos","Videos")
-@using (Html.BeginForm())
+@Html.ActionLink("All Videos", "Index", "Videos")
+@using (Html.BeginForm("Index","Videos"))
 {
     <input type="submit" style="float:right" value="Save Changes" />
     @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
@@ -51,16 +51,18 @@
                                 </h3>
                                 <div class="yt-lockup-meta">
                                     <ul class="yt-lockup-meta-info">
-                                        <li>@Html.HiddenFor(m => m[i].Id)
-                                            @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })</li>
-                                        <li>@Model[i].TimeSince</li>
-                                        <li>@Html.EditorFor(m => m[i].Watched)</li>
-                                    </ul>
-                                </div>
+                                        <li>
+                                            @Html.HiddenFor(m => m[i].Id)
+                                        @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })
+                                    </li>
+                                    <li>@Model[i].TimeSince</li>
+                                    <li>@Html.EditorFor(m => m[i].Watched)</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                </li>
+                </div>
+            </li>
             }
         </ul>
     </div>
