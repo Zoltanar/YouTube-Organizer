@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +40,7 @@ namespace YoutubeOrganizer.Controllers
         public async Task<IActionResult> Index(int page = 1)
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            return View(await _context.GetMyPagedVideosAsync(info, page));
+            return View(await _context.GetVideosAsync(info, page));
         }
 
         /// <summary>
@@ -96,7 +97,9 @@ namespace YoutubeOrganizer.Controllers
             }
             //TODO move split parts to its own place more splits ||, ? (u2013), allow with numbers
             var parts = videoItem.Title.Split('-');
-            videoItem.Groupings = new SelectList(parts);
+            var rgx = new Regex(@"#\d+");
+            var selectList = parts.Select(part => rgx.IsMatch(part) ? rgx.Replace(part, "#num") : part).ToList();
+            videoItem.Groupings = new SelectList(selectList);
             return View(videoItem);
         }
 
@@ -122,18 +125,17 @@ namespace YoutubeOrganizer.Controllers
         public async Task<IActionResult> DisplayGroups(string channelId, string groupingSelected, int page = 1)
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            return View("Index", await _context.GetMyPagedVideosByGroupingAsync(info, channelId, groupingSelected, page));
+            return View("Index", await _context.GetVideosByGroupingAsync(info, channelId, groupingSelected, page));
         }
 
         /// <summary>
         /// Display Watched Videos.
         /// </summary>
         /// <param name="page"></param>
-        /// <returns></returns>
         public async Task<IActionResult> WatchedVideos(int page = 1)
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            return View(await _context.GetMyPagedVideosWatchedAsync(info, page));
+            return View(await _context.GetVideosWatchedAsync(info, page));
         }
     }
 

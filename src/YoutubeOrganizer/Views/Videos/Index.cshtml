@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="~/css/YouTube2.css">
 <div style="padding-top: 100px"></div>
 <h2>Videos from Subscriptions</h2>
-@Html.ActionLink("Watched Videos","WatchedVideos","Videos")
+@Html.ActionLink("Watched Videos", "WatchedVideos", "Videos")
 @using (Html.BeginForm())
 {
     <input type="submit" style="float:right" value="Save Changes" />
@@ -40,8 +40,7 @@
                                             @Model[i].DisplayDuration
                                         </span>
                                     </span>
-                                    <span class="yt-uix-button-arrow yt-sprite">
-                                    </span>
+                                    <span class="yt-uix-button-arrow yt-sprite"></span>
                                 </span>
                             </div>
                             <div class="yt-lockup-content">
@@ -50,6 +49,7 @@
                                     <span class="accessible-description">- Duration: @Model[i].DisplayDuration</span>
                                 </h3>
                                 <div class="yt-lockup-meta">
+                                    @Html.ActionLink(Model[i].ChannelTitle, "Details", "Channels", new RouteValueDictionary { { "Id", Model[i].ChannelId } })
                                     <ul class="yt-lockup-meta-info">
                                         <li>@Html.HiddenFor(m => m[i].Id)
                                             @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })</li>

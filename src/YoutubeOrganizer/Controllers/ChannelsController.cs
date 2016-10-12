@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,17 +18,23 @@ using Microsoft.AspNetCore.Identity;
 namespace YoutubeOrganizer.Controllers
 {
 
+    /// <summary>
+    /// Controller handling views about YouTube Channels.
+    /// </summary>
     public class ChannelsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private const int YouTubeMaxResults = 50;
-        private const string YouTubeShortURL = "https://youtu.be/";
         private const string YouTubeChannelPrepend = "https://youtube.com/channel/";
 
 
-        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
-        public ChannelsController(ApplicationDbContext context, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="context">Context holding database with object items</param>
+        /// <param name="userManager">Database holding users</param>
+        public ChannelsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -107,7 +112,7 @@ namespace YoutubeOrganizer.Controllers
             }
             var presentVideos = await _context.VideoItem.Select(x => x.Id).ToListAsync();
             var youTubeService = await CreateYouTubeService();
-            if(youTubeService == null) return RedirectToAction("Index"); //TODO should return error
+            if (youTubeService == null) return RedirectToAction("Index"); //TODO should return error
             await FetchVideoIdsByChannel(youTubeService, new[] { channelItem }, presentVideos);
             return RedirectToAction("Index");
         }
@@ -263,6 +268,9 @@ namespace YoutubeOrganizer.Controllers
         }
 
         // GET: ChannelItems
+        /// <summary>
+        /// Display channels that user is subscribed to.
+        /// </summary>
         public async Task<IActionResult> Index()
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
@@ -288,25 +296,31 @@ namespace YoutubeOrganizer.Controllers
         }
 
         // GET: ChannelItems/Details/5
-        public async Task<IActionResult> Details(string id)
+        /// <summary>
+        /// Display details about specified channel, incl. videos published.
+        /// </summary>
+        /// <param name="id">Id of channel</param>
+        /// <param name="page">Page of videos.</param>
+        public async Task<IActionResult> Details(string id, int page = 1)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
             var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.Id.Equals(id));
             if (channelItem == null)
             {
                 return NotFound();
             }
             channelItem.ChannelURL = YouTubeChannelPrepend + channelItem.Id;
-            List<VideoItem> channelVideos = await _context.VideoItem.Where(video => video.ChannelId.Equals(id)).
-                OrderByDescending(video => video.PublishDate).ToListAsync();
-            return View(new Tuple<ChannelItem, IEnumerable<VideoItem>>(channelItem, channelVideos));
+            MyPagedList<VideoItem> channelVideos = await _context.GetVideosByChannelAsync(info, channelItem.Id, page);
+            return View(new Tuple<ChannelItem, MyPagedList<VideoItem>>(channelItem, channelVideos));
         }
-
-
+        
+        /// <summary>
+        /// Displays list of videos watched by user, sorted by PublishDate.
+        /// </summary>
         public async Task<IActionResult> History()
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
@@ -325,7 +339,6 @@ namespace YoutubeOrganizer.Controllers
                 VideoURL = video.VideoURL
             });
             return View(listForViewing);
-
         }
     }
 }

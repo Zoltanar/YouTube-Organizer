@@ -31,7 +31,7 @@ else
                 @Html.DisplayNameFor(model => model.ChannelTitle)
             </dt>
             <dd>
-                @Html.DisplayFor(model => model.ChannelTitle)
+                @Html.ActionLink(Model.ChannelTitle,"Details","Channels",new RouteValueDictionary{ {"Id",Model.ChannelId} })
             </dd>
             <dt>
                 @Html.DisplayNameFor(model => model.Duration)

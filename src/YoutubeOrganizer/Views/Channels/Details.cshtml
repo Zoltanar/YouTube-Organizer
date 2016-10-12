@@ -1,4 +1,4 @@
-@model Tuple<ChannelItem, IEnumerable<VideoItem>>
+@model Tuple<ChannelItem, MyPagedList<VideoItem>>
 @{
     ViewData["Title"] = "Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -10,19 +10,10 @@
     <h4>@Html.DisplayFor(model => model.Item1.ChannelTitle)</h4>
     <hr />
     <dl class="dl-horizontal">
-        <dt>
-            YouTube Channel
-        </dt>
-        <dd>
-            <a href="@Model.Item1.ChannelURL">@Model.Item1.ChannelURL</a>
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Item1.UploadPlaylist)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Item1.UploadPlaylist)
-        </dd>
-
+        <dt>YouTube Channel</dt>
+        <dd><a href="@Model.Item1.ChannelURL">@Model.Item1.ChannelURL</a></dd>
+        <dt>@Html.DisplayNameFor(model => model.Item1.UploadPlaylist)</dt>
+        <dd>@Html.DisplayFor(model => model.Item1.UploadPlaylist)</dd>
     </dl>
 </div>
 <div>
