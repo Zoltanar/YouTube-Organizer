@@ -1,69 +1,113 @@
 @using System.Threading.Tasks
 @using Microsoft.AspNetCore.Routing
-@model MyPagedList<VideoItem>
+@model PagedVideoList
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Videos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<link rel="stylesheet" href="~/css/MyYouTube.css">
+<script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#checkAll").click(function () {
+            $(".check-box").prop('checked',
+                $(this).prop('checked'));
+        });
+    });
 
-<link rel="stylesheet" href="~/css/YouTube.css">
-<link rel="stylesheet" href="~/css/YouTube2.css">
-<div style="padding-top: 100px"></div>
-<h2>Videos from Subscriptions</h2>
+</script>
+<script>
+    var toggleStatus = "only";
+    function toggleWatched() {
+        switch (toggleStatus) {
+            case "show":
+                $("li").filter(".watched").css("display", "inline-block");
+                $("li").filter(".unwatched").css("display", "inline-block");
+                $("#toggleWatchedButton").html("Showing All Videos");
+                toggleStatus = "only";
+                break;
+            case "only":
+                $("li").filter(".watched").css("display", "inline-block");
+                $("li").filter(".unwatched").css("display", "none");
+                $("#toggleWatchedButton").html("Showing Watched Videos");
+                toggleStatus = "hide";
+                break;
+            case "hide":
+                $("li").filter(".watched").css("display", "none");
+                $("li").filter(".unwatched").css("display", "inline-block");
+                $("#toggleWatchedButton").html("Showing Unwatched Videos");
+                toggleStatus = "show";
+                break;
+
+        }
+    }
+</script>
+<h2 style="margin-top: 20px;margin-bottom: 10px;">Videos from Subscriptions</h2>
+<dl class="dl-horizontal">
+    <dt>Videos Watched:</dt>
+    <dd>
+        @{ var unwatched = Model.TotalCount - Model.TotalWatchedCount;}
+        @Model.TotalWatchedCount/@Model.TotalCount (@unwatched unwatched)
+    </dd>
+</dl>
 @Html.ActionLink("Watched Videos", "WatchedVideos", "Videos")
-@using (Html.BeginForm())
+<button id="toggleWatchedButton"onclick="toggleWatched()">Showing All Videos</button>
+@using (Html.BeginForm("Index", "Videos"))
 {
     <input type="submit" style="float:right" value="Save Changes" />
-    @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
-    <div id="video-grid-holder" class="grid-holder">
-        <ul class="channels-browse-content-grid branded-page-gutter-padding grid-lockups-container">
-            @for (int i = 0; i < Model.Count; i++)
-            {
-                <li class="channels-content-item yt-shelf-grid-item">
-                    <div class="yt-lockup clearfix  yt-lockup-video yt-lockup-grid vve-check" data-context-item-id="@Model[i].Id">
-                        <div class="yt-lockup-dismissable">
-                            <div class="yt-lockup-thumbnail">
-                                <span class=" spf-link ux-thumb-wrap contains-addto">
-                                    <a href="@Model[i].VideoURL" class="yt-uix-sessionlink" aria-hidden="true">
-                                        <span class="video-thumb  yt-thumb yt-thumb-196">
-                                            <span class="yt-thumb-default">
-                                                <span class="yt-thumb-clip">
-                                                    <img alt="" aria-hidden="true" width="196" src="@Model[i].ThumbnailUrl">
-                                                    <span class="vertical-align"></span>
+        <input type="checkbox" id="checkAll" />
+        @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+        <div id="video-grid-holder" class="grid-holder">
+            <ul id="channels-browse-content-grid" class="channels-browse-content-grid branded-page-gutter-padding grid-lockups-container">
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    <li class="@("channels-content-item yt-shelf-grid-item" + (Model[i].Watched ? " watched" : " unwatched"))">
+                        <div class="yt-lockup clearfix yt-lockup-grid">
+                            <div class="yt-lockup-dismissable">
+                                <div class="yt-lockup-thumbnail">
+                                    <span class="spf-link ux-thumb-wrap contains-addto">
+                                        <a href="@Model[i].VideoURL" class="yt-uix-sessionlink" aria-hidden="true">
+                                            <span class="video-thumb  yt-thumb yt-thumb-196">
+                                                <span class="yt-thumb-default">
+                                                    <span class="yt-thumb-clip">
+                                                        <img alt="" aria-hidden="true" width="196" src="@Model[i].ThumbnailUrl">
+                                                        <span class="vertical-align"></span>
+                                                    </span>
                                                 </span>
                                             </span>
+                                        </a>
+                                        <span class="video-time" aria-hidden="true">
+                                            <span aria-label="@Model[i].Duration">
+                                                @Model[i].DisplayDuration
+                                            </span>
                                         </span>
-                                    </a>
-                                    <span class="video-time" aria-hidden="true">
-                                        <span aria-label="@Model[i].Duration">
-                                            @Model[i].DisplayDuration
-                                        </span>
+                                        <span class="yt-uix-button-arrow yt-sprite"></span>
                                     </span>
-                                    <span class="yt-uix-button-arrow yt-sprite"></span>
-                                </span>
-                            </div>
-                            <div class="yt-lockup-content">
-                                <h3 class="yt-lockup-title">
-                                    <a class="yt-uix-sessionlink yt-uix-tile-link  spf-link  yt-ui-ellipsis yt-ui-ellipsis-2" dir="ltr" title="@Model[i].Title" href="@Model[i].VideoURL">@Model[i].Title</a>
-                                    <span class="accessible-description">- Duration: @Model[i].DisplayDuration</span>
-                                </h3>
-                                <div class="yt-lockup-meta">
-                                    @Html.ActionLink(Model[i].ChannelTitle, "Details", "Channels", new RouteValueDictionary { { "Id", Model[i].ChannelId } })
-                                    <ul class="yt-lockup-meta-info">
-                                        <li>@Html.HiddenFor(m => m[i].Id)
-                                            @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })</li>
-                                        <li>@Model[i].TimeSince</li>
-                                        <li>@Html.EditorFor(m => m[i].Watched)</li>
-                                    </ul>
+                                </div>
+                                <div class="yt-lockup-content">
+                                    <h3 class="yt-lockup-title">
+                                        <a class="yt-uix-sessionlink yt-uix-tile-link  spf-link  yt-ui-ellipsis yt-ui-ellipsis-2" dir="ltr" title="@Model[i].Title" href="@Model[i].VideoURL">@Model[i].Title</a>
+                                        <span class="accessible-description">- Duration: @Model[i].DisplayDuration</span>
+                                    </h3>
+                                    <div class="yt-lockup-meta">
+                                        @Html.ActionLink(Model[i].ChannelTitle, "Details", "Channels", new RouteValueDictionary { { "Id", Model[i].ChannelId } })
+                                        <ul class="yt-lockup-meta-info">
+                                            <li>
+                                                @Html.HiddenFor(m => m[i].Id)
+                                                @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })
+                                            </li>
+                                            <li>@Model[i].TimeSince</li>
+                                            <li>@Html.EditorFor(m => m[i].Watched)</li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </li>
-            }
-        </ul>
-    </div>
-    @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
-    <input type="submit" style="float:right" value="Save Changes" />
+                    </li>
+                }
+            </ul>
+        </div>
+        @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+        <input type="submit" style="float:right" value="Save Changes" />
 }

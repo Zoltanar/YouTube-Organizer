@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace YoutubeOrganizer.Models
 {
+    /// <summary>
+    /// Class holding details about a YouTube Channel.
+    /// </summary>
     public class ChannelItem
     {
         /// <summary>
@@ -21,15 +24,26 @@ namespace YoutubeOrganizer.Models
         ///method to upload new videos and the videos.delete method to delete previously
         ///uploaded videos.
         /// </summary>
-
         [Display(Name = "Upload Playlist")]
-        public string UploadPlaylist { get; set; }//=> ContentDetails.RelatedPlaylists.Uploads;
+        public string UploadPlaylist { get; set; }
 
+        /// <summary>
+        /// Number of videos published by this channel
+        /// </summary>
         [Display(Name = "Number of videos")]
         public int NumberOfVideos { get; set; }
 
+        /// <summary>
+        /// URL of this channel.
+        /// </summary>
         [NotMapped]
         public string ChannelURL { get; set; }
+
+        /// <summary>
+        /// Number of videos that the user has watched
+        /// </summary>
+        [NotMapped]
+        public int NumberOfWatchedVideos { get; set; }
 
         /// <summary>Returns a string that represents the current object.</summary>
         /// <returns>A string that represents the current object.</returns>

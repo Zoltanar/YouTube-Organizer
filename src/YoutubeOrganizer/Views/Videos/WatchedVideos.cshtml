@@ -1,20 +1,28 @@
 ﻿@using System.Threading.Tasks
 @using Microsoft.AspNetCore.Routing
-@model MyPagedList<VideoItem>
+@model PagedVideoList
 
 @{
     ViewData["Title"] = "WatchedVideos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<link rel="stylesheet" href="~/css/YouTube.css">
-<link rel="stylesheet" href="~/css/YouTube2.css">
+<link rel="stylesheet" href="~/css/MyYouTube.css">
+<script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script> 
+<script>
+    $(document).ready(function () {
+        $("#checkAll").click(function () {
+            $(".check-box").prop('checked',
+                $(this).prop('checked'));
+        });
+    });
+</script>
 <div style="padding-top: 100px"></div>
 <h2>Videos from Subscriptions</h2>
 @Html.ActionLink("All Videos", "Index", "Videos")
-@using (Html.BeginForm("Index","Videos"))
+@using (Html.BeginForm("Index", "Videos"))
 {
     <input type="submit" style="float:right" value="Save Changes" />
+    <input type="checkbox" id="checkAll" />
     @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
     <div id="video-grid-holder" class="grid-holder">
         <ul class="channels-browse-content-grid branded-page-gutter-padding grid-lockups-container">
@@ -53,16 +61,16 @@
                                     <ul class="yt-lockup-meta-info">
                                         <li>
                                             @Html.HiddenFor(m => m[i].Id)
-                                        @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })
-                                    </li>
-                                    <li>@Model[i].TimeSince</li>
-                                    <li>@Html.EditorFor(m => m[i].Watched)</li>
-                                </ul>
+                                            @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })
+                                        </li>
+                                        <li>@Model[i].TimeSince</li>
+                                        <li>@Html.EditorFor(m => m[i].Watched)</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </li>
+                </li>
             }
         </ul>
     </div>

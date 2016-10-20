@@ -16,15 +16,15 @@ namespace YoutubeOrganizer
     /// </summary>
     public static class DbHelper
     {
-       /// <summary>
+        /// <summary>
         /// Return list of videos sorted by PublishDate.
         /// </summary>
         /// <param name="context">Context containing database with videos</param>
         /// <param name="userInfo">Login Info of user</param>
-        /// <param name="pageNumber">The number of the page to be returned</param>
         /// <param name="pageSize">The number of results per page</param>
+        /// <param name="pageIndex">The number of the page to be returned</param>
         /// <returns></returns>
-        public static async Task<MyPagedList<VideoItem>> GetVideosAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, int pageNumber = 1, int pageSize = 25)
+        public static async Task<PagedVideoList> GetVideosAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, int pageSize = 25, int pageIndex = 1)
         {
             var userVideoResults = await context.UserVideo.Where(x => x.UserID.Equals(userInfo.ProviderKey)).ToListAsync();
 
@@ -43,8 +43,7 @@ namespace YoutubeOrganizer
                                                     VideoURL = video.VideoURL,
                                                     Watched = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(video.Id)).Watched
                                                 };
-            var pagedList = await liveResults.ToPagedListAsync(pageSize, pageNumber);
-            return (MyPagedList<VideoItem>)pagedList;
+            return await FromLiveItemsAsync(liveResults, pageSize, pageIndex);
         }
 
         /// <summary>
@@ -52,9 +51,9 @@ namespace YoutubeOrganizer
         /// </summary>
         /// <param name="context">Context containing database with videos</param>
         /// <param name="userInfo">Login Info of user</param>
-        /// <param name="pageNumber">The number of the page to be returned</param>
         /// <param name="pageSize">The number of results per page</param>
-        public static async Task<MyPagedList<VideoItem>> GetVideosWatchedAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, int pageNumber = 1, int pageSize = 25)
+        /// <param name="pageIndex">1-Based index of page</param>
+        public static async Task<PagedVideoList> GetVideosWatchedAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, int pageSize = 25, int pageIndex = 1)
         {
             List<UserVideo> userVideoResults = await context.UserVideo.Where(x => x.UserID.Equals(userInfo.ProviderKey) && x.Watched).ToListAsync();
 
@@ -74,8 +73,7 @@ namespace YoutubeOrganizer
                                                     VideoURL = video.VideoURL,
                                                     Watched = true
                                                 };
-            PagedList<IQueryable<VideoItem>, VideoItem> pagedList = await liveResults.ToPagedListAsync(pageSize, pageNumber);
-            return (MyPagedList<VideoItem>)pagedList;
+            return await FromLiveItemsAsync(liveResults, pageSize, pageIndex);
         }
 
         /// <summary>
@@ -85,9 +83,9 @@ namespace YoutubeOrganizer
         /// <param name="userInfo">Login Info of user</param>
         /// <param name="channelId">ID of channel</param>
         /// <param name="groupingSelected">String or template which videos should contain or match</param>
-        /// <param name="pageNumber">The number of the page to be returned</param>
         /// <param name="pageSize">The number of results per page</param>
-        public static async Task<MyPagedList<VideoItem>> GetVideosByGroupingAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, string channelId, string groupingSelected, int pageNumber = 1, int pageSize = 25)
+        /// <param name="pageIndex">The number of the page to be returned</param>
+        public static async Task<PagedVideoList> GetVideosByGroupingAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, string channelId, string groupingSelected, int pageSize = 25, int pageIndex = 1)
         {
             var userVideoResults = await context.UserVideo.Where(x => x.UserID.Equals(userInfo.ProviderKey)).ToListAsync();
 
@@ -109,8 +107,7 @@ namespace YoutubeOrganizer
                                                     VideoURL = video.VideoURL,
                                                     Watched = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(video.Id)).Watched
                                                 };
-            PagedList<IQueryable<VideoItem>, VideoItem> pagedList = await liveResults.ToPagedListAsync(pageSize, pageNumber);
-            return (MyPagedList<VideoItem>)pagedList;
+            return await FromLiveItemsAsync(liveResults, pageSize, pageIndex);
         }
 
         /// <summary>
@@ -119,9 +116,9 @@ namespace YoutubeOrganizer
         /// <param name="context">Context containing database with videos</param>
         /// <param name="userInfo">Login Info of user</param>
         /// <param name="channelId">ID of channel</param>
-        /// <param name="pageNumber">The number of the page to be returned</param>
         /// <param name="pageSize">The number of results per page</param>
-        public static async Task<MyPagedList<VideoItem>> GetVideosByChannelAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, string channelId, int pageNumber = 1, int pageSize = 25)
+        /// <param name="pageIndex">The number of the page to be returned</param>
+        public static async Task<PagedVideoList> GetVideosByChannelAsync(this ApplicationDbContext context, ShortLoginInfo userInfo, string channelId, int pageSize = 25, int pageIndex = 1)
         {
             var userVideoResults = await context.UserVideo.Where(x => x.UserID.Equals(userInfo.ProviderKey)).ToListAsync();
             IQueryable<VideoItem> liveResults = from video in context.VideoItem
@@ -140,8 +137,7 @@ namespace YoutubeOrganizer
                                                     VideoURL = video.VideoURL,
                                                     Watched = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(video.Id)).Watched
                                                 };
-            var pagedList = await liveResults.ToPagedListAsync(pageSize, pageNumber);
-            return (MyPagedList<VideoItem>)pagedList;
+            return await FromLiveItemsAsync(liveResults, pageSize, pageIndex);
         }
 
         /// <summary>
@@ -185,6 +181,22 @@ namespace YoutubeOrganizer
         {
             var user = await userManager.GetUserAsync(httpContext.User);
             return user?.GetLoginInfo();
+        }
+
+        /// <summary>
+        /// Make a PagedVideoList from IQueryable&lt;VideoItem&gt;.
+        /// </summary>
+        /// <param name="liveItems">Video items</param>
+        /// <param name="pageSize">The number of results per page</param>
+        /// <param name="pageIndex">1-Based index of page</param>
+        /// <returns></returns>
+        public static async Task<PagedVideoList> FromLiveItemsAsync(IQueryable<VideoItem> liveItems, int pageSize = 25, int pageIndex = 1)
+        {
+            var list = await liveItems.ToListAsync();
+            PagedList<IQueryable<VideoItem>, VideoItem> pagedList = await liveItems.ToPagedListAsync(pageSize, pageIndex);
+            var preparedList = (PagedVideoList)pagedList;
+            preparedList.TotalWatchedCount = list.Count(video => video.Watched);
+            return preparedList;
         }
     }
 }

@@ -40,7 +40,7 @@ namespace YoutubeOrganizer.Controllers
         public async Task<IActionResult> Index(int page = 1)
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            return View(await _context.GetVideosAsync(info, page));
+            return View(await _context.GetVideosAsync(info,pageIndex: page));
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace YoutubeOrganizer.Controllers
         /// <param name="videos">List of videos to be changed</param>
         /// <param name="page">Index of page to return to</param>
         [HttpPost]
-        public async Task<IActionResult> Index(MyPagedList<VideoItem> videos, int page = 1)
+        public async Task<IActionResult> Index(PagedVideoList videos, int page = 1)
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
             List<string> currentUserVideos = await _context.UserVideo.Where(entry => entry.UserID.Equals(info.ProviderKey)).Select(entry => entry.VideoId).ToListAsync();
@@ -125,7 +125,7 @@ namespace YoutubeOrganizer.Controllers
         public async Task<IActionResult> DisplayGroups(string channelId, string groupingSelected, int page = 1)
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            return View("Index", await _context.GetVideosByGroupingAsync(info, channelId, groupingSelected, page));
+            return View("Index", await _context.GetVideosByGroupingAsync(info, channelId, groupingSelected, pageIndex: page));
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace YoutubeOrganizer.Controllers
         public async Task<IActionResult> WatchedVideos(int page = 1)
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            return View(await _context.GetVideosWatchedAsync(info, page));
+            return View(await _context.GetVideosWatchedAsync(info, pageIndex: page));
         }
     }
 

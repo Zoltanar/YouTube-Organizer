@@ -1,6 +1,6 @@
-@model Tuple<ChannelItem, MyPagedList<VideoItem>>
+@model Tuple<ChannelItem, PagedVideoList>
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = Model.Item1.ChannelTitle;
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -14,6 +14,11 @@
         <dd><a href="@Model.Item1.ChannelURL">@Model.Item1.ChannelURL</a></dd>
         <dt>@Html.DisplayNameFor(model => model.Item1.UploadPlaylist)</dt>
         <dd>@Html.DisplayFor(model => model.Item1.UploadPlaylist)</dd>
+        <dt>Videos Watched:</dt>
+        <dd>
+            @{ var unwatched = Model.Item2.TotalCount - Model.Item2.TotalWatchedCount;}
+            @Model.Item2.TotalWatchedCount/@Model.Item2.TotalCount (@unwatched unwatched)
+        </dd>
     </dl>
 </div>
 <div>
@@ -37,9 +42,7 @@
                 <td>@Html.DisplayFor(modelItem => item.Title)</td>
                 <td>@Html.DisplayFor(modelItem => item.PublishDate)</td>
                 <td>@Html.DisplayFor(modelItem => item.Watched)</td>
-                <td>
-                    <a asp-controller="Videos" asp-action="Details" asp-route-id="@item.Id">Details</a>
-                </td>
+                <td><a asp-controller="Videos" asp-action="Details" asp-route-id="@item.Id">Details</a></td>
             </tr>
         }
     </tbody>

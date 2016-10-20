@@ -1,0 +1,356 @@
+﻿hr, html, i, iframe, img, ins, kbd, label, legend, li, menu, object, ol, p, pre, q, s, samp, small, span, strike, strong, sub {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    background: transparent;
+}
+
+a {
+    color: #167ac6;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+a, abbr, acronym, address, applet, b, big, blockquote {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    background: transparent;
+}
+
+h3, h4 {
+    font-size: 13px;
+}
+
+h3, h4, h5, h6 {
+    font-weight: 500;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+table, tbody, td, tfoot, th, thead, tr, tt, u, ul, var {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    background: transparent;
+}
+
+menu, ol, ul {
+    list-style: none;
+}
+
+.channels-browse-content-grid .channels-content-item {
+    margin-bottom: 20px;
+}
+
+.yt-shelf-grid-item {
+    display: inline-block;
+    margin-right: 10px;
+    vertical-align: top;
+    width: 196px;
+    word-wrap: break-word;
+}
+
+.yt-lockup.yt-lockup-grid {
+    font-size: 11px;
+}
+
+.yt-lockup {
+    color: #767676;
+    line-height: 1.3em;
+    position: relative;
+}
+
+.clearfix:before {
+    content: '.';
+    display: block;
+    height: 0;
+    visibility: hidden;
+}
+
+.yt-lockup-grid .yt-lockup-thumbnail {
+    margin-bottom: 4px;
+}
+
+.yt-lockup-thumbnail {
+    line-height: 0;
+    position: relative;
+}
+
+.yt-shelf-grid-item .ux-thumb-wrap {
+    width: 100%;
+}
+
+.contains-addto {
+    display: block;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.ux-thumb-wrap {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.watched .video-thumb {
+    opacity: .7;
+    filter: alpha(opacity=70);
+}
+
+.watched .video-thumb {
+    opacity: .4;
+}
+
+.video-thumb {
+    position: relative;
+}
+
+.yt-thumb-196 {
+    width: 196px;
+}
+
+.yt-thumb {
+    overflow: hidden;
+    background: #f1f1f1;
+    font-size: 0;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.yt-thumb {
+    background-color: #2d2d2d !important;
+}
+
+.yt-thumb-default {
+    padding-bottom: 56.25%;
+}
+
+.yt-thumb-poster, .yt-thumb-square, .yt-thumb-feed, .yt-thumb-related-playlist, .yt-thumb-default {
+    display: block;
+    height: auto;
+}
+
+.yt-thumb-clip {
+    position: absolute;
+    _position: static;
+    bottom: -100px;
+    top: -100px;
+    left: -100px;
+    right: -100px;
+    text-align: center;
+    white-space: nowrap;
+    word-break: normal;
+}
+
+    .yt-thumb-clip img, .yt-thumb-clip .vertical-align {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+.yt-thumb img {
+    font-size: 13px;
+    outline: none;
+}
+
+.yt-thumb .vertical-align {
+    height: 100%;
+}
+
+.watched-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 2px 4px;
+    line-height: 1.3em;
+    text-align: left;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    background-color: #000;
+    opacity: .5;
+    filter: alpha(opacity=50);
+    overflow: hidden;
+    white-space: nowrap;
+    word-wrap: normal;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+}
+
+.video-time {
+    margin-top: 0;
+    margin-right: 0;
+    padding: 0 4px;
+    font-weight: 500;
+    font-size: 11px;
+    background-color: #000;
+    color: #fff !important;
+    height: 14px;
+    line-height: 14px;
+    opacity: .75;
+    filter: alpha(opacity=75);
+    display: -moz-inline-stack;
+    vertical-align: top;
+    display: inline-block;
+}
+
+.video-time, .video-time-overlay {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+}
+
+.yt-lockup .yt-lockup-content {
+    overflow: hidden;
+    position: relative;
+}
+
+.yt-lockup-grid .yt-lockup-title {
+    font-size: 13px;
+    margin-bottom: 1px;
+    max-width: 196px;
+}
+
+.yt-lockup-title {
+    margin-bottom: 2px;
+}
+
+.webkit .yt-ui-ellipsis-2 {
+    -webkit-line-clamp: 2;
+}
+
+.webkit .yt-ui-ellipsis {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+.webkit .yt-ui-ellipsis-2 {
+    -webkit-line-clamp: 2;
+}
+
+.webkit .yt-ui-ellipsis {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+.yt-lockup-title a, .yt-lockup:hover a, .yt-lockup:hover .yt-lockup-meta a, .yt-lockup:hover .yt-lockup-description a {
+    color: #167ac6;
+}
+
+.yt-lockup-title a, .lohp-video-link, a.yt-user-name {
+    color: #4183C4 !important;
+}
+
+.yt-ui-ellipsis-2 {
+    max-height: 2.6em;
+}
+
+.yt-ui-ellipsis {
+    background-color: #fff;
+    display: block;
+    line-height: 1.3em;
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.yt-ui-ellipsis-2 {
+    max-height: 2.6em;
+}
+
+.yt-ui-ellipsis {
+    background-color: #fff;
+    display: block;
+    line-height: 1.3em;
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.yt-ui-ellipsis {
+    background: none !important;
+}
+
+.webkit .yt-ui-ellipsis::after {
+    content: '\00200c';
+    position: static;
+    visibility: hidden;
+}
+
+.webkit .yt-ui-ellipsis::after {
+    content: '\00200c';
+    position: static;
+    visibility: hidden;
+}
+
+.yt-ui-ellipsis::after {
+    content: '';
+    height: 100%;
+    width: 100%;
+}
+
+.yt-ui-ellipsis::after {
+    background-color: inherit;
+    position: absolute;
+}
+
+.yt-ui-ellipsis::after {
+    content: '';
+    height: 100%;
+    width: 100%;
+}
+
+.yt-ui-ellipsis::after {
+    background-color: inherit;
+    position: absolute;
+}
+
+.accessible-description {
+    display: none;
+}
+
+.yt-lockup-grid .yt-lockup-meta {
+    max-width: 196px;
+}
+
+.yt-lockup-meta {
+    display: block;
+}
+
+.yt-lockup-meta-info > li {
+    line-height: 1.3em;
+    display: inline-block;
+}
+
+    .yt-lockup-meta-info > li:last-child {
+        margin-right: 0;
+    }
+
+.yt-lockup-notifications-container {
+    border: 1px solid #e2e2e2;
+}
+
+.hid {
+    display: none;
+}
+
+.clearfix:after {
+    content: '.';
+    display: block;
+    height: 0;
+    visibility: hidden;
+    clear: both;
+}

@@ -27,6 +27,7 @@ namespace YoutubeOrganizer.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private const int YouTubeMaxResults = 50;
         private const string YouTubeChannelPrepend = "https://youtube.com/channel/";
+        private const string YouTubeVideoPrepend = "https://youtu.be/";
 
 
         /// <summary>
@@ -197,22 +198,18 @@ namespace YoutubeOrganizer.Controllers
         private static IEnumerable<VideoItem> MakeVideoList(string channelId, IEnumerable<Video> videos)
         {
             //TODO can this be done through simply casting the items?
-            var list = new List<VideoItem>();
-            foreach (var video in videos)
+            return videos.Select(video => new VideoItem
             {
-                list.Add(new VideoItem
-                {
-                    Id = video.Id,
-                    ChannelId = channelId,
-                    Title = video.Snippet.Title,
-                    Duration = video.ContentDetails.Duration,
-                    PublishDate = video.Snippet.PublishedAt,
-                    ThumbnailUrl = video.Snippet.Thumbnails.Default__.Url,
-                    ThumbnailHeight = video.Snippet.Thumbnails.Default__.Height,
-                    ThumbnailWidth = video.Snippet.Thumbnails.Default__.Width
-                });
-            }
-            return list;
+                Id = video.Id,
+                ChannelId = channelId,
+                Title = video.Snippet.Title,
+                Duration = video.ContentDetails.Duration,
+                PublishDate = video.Snippet.PublishedAt,
+                ThumbnailUrl = video.Snippet.Thumbnails.High.Url,
+                ThumbnailHeight = video.Snippet.Thumbnails.High.Height,
+                ThumbnailWidth = video.Snippet.Thumbnails.High.Width,
+                VideoURL = YouTubeVideoPrepend + video.Id
+            }).ToList();
         }
 
         /// <summary>
@@ -314,10 +311,11 @@ namespace YoutubeOrganizer.Controllers
                 return NotFound();
             }
             channelItem.ChannelURL = YouTubeChannelPrepend + channelItem.Id;
-            MyPagedList<VideoItem> channelVideos = await _context.GetVideosByChannelAsync(info, channelItem.Id, page);
-            return View(new Tuple<ChannelItem, MyPagedList<VideoItem>>(channelItem, channelVideos));
+            PagedVideoList channelVideos = await _context.GetVideosByChannelAsync(info, channelItem.Id,pageIndex: page);
+            channelItem.NumberOfWatchedVideos = channelVideos.Count(x => x.Watched);
+            return View(new Tuple<ChannelItem, PagedVideoList>(channelItem, channelVideos));
         }
-        
+
         /// <summary>
         /// Displays list of videos watched by user, sorted by PublishDate.
         /// </summary>

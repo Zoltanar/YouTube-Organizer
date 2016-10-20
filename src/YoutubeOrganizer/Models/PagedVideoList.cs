@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Sakura.AspNetCore;
 
 namespace YoutubeOrganizer.Models
@@ -7,8 +8,7 @@ namespace YoutubeOrganizer.Models
     /// <summary>
     /// Custom PagedList to get around ambiguous inheritance issues in Sakura.AspNetCore.PagedList.
     /// </summary>
-    /// <typeparam name="TSource">Type of objects in list</typeparam>
-    public class MyPagedList<TSource> : List<TSource>
+    public class PagedVideoList : List<VideoItem>
     {
         /// <summary>
         /// Number of total items, across all pages.
@@ -38,21 +38,26 @@ namespace YoutubeOrganizer.Models
         /// Is this page the last?
         /// </summary>
         public bool IsLastPage { get; set; }
+        
+        /// <summary>
+        /// Number of total items that have been watched by user, across all pages.
+        /// </summary>
+        public int TotalWatchedCount { get; set; }
 
         // ReSharper disable once EmptyConstructor
         /// <summary>
         /// Empty Constructor
         /// </summary>
-        public MyPagedList()
+        public PagedVideoList()
         { }
 
         /// <summary>
         /// Explicit cast from PagedList.
         /// </summary>
         /// <param name="pagedList">PagedList to cast from.</param>
-        public static explicit operator MyPagedList<TSource>(PagedList<IQueryable<TSource>, TSource> pagedList)
+        public static explicit operator PagedVideoList(PagedList<IQueryable<VideoItem>, VideoItem> pagedList)
         {
-            var list = new MyPagedList<TSource>
+            var list = new PagedVideoList
             {
                 TotalPage = pagedList.TotalPage,
                 TotalCount = pagedList.TotalCount,
