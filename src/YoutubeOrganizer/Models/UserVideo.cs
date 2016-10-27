@@ -1,7 +1,13 @@
 ﻿namespace YoutubeOrganizer.Models
 {
+    /// <summary>
+    /// Relationship between a video and a user.
+    /// </summary>
     public class UserVideo
     {
+        /// <summary>
+        /// Unique YouTube video ID.
+        /// </summary>
         public string VideoId { get; set; }
 
         /// <summary>
