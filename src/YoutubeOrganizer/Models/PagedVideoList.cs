@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Sakura.AspNetCore;
 
 namespace YoutubeOrganizer.Models
@@ -43,6 +42,16 @@ namespace YoutubeOrganizer.Models
         /// Number of total items that have been watched by user, across all pages.
         /// </summary>
         public int TotalWatchedCount { get; set; }
+
+        /// <summary>
+        /// Id of Channel that published videos.
+        /// </summary>
+        public string ChannelId { get; set; }
+
+        /// <summary>
+        /// String/template determining group of videos.
+        /// </summary>
+        public string Grouping { get; set; }
 
         // ReSharper disable once EmptyConstructor
         /// <summary>

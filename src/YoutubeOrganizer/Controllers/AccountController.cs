@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using YoutubeOrganizer.Models;
 using YoutubeOrganizer.Models.AccountViewModels;
 using YoutubeOrganizer.Services;
+#pragma warning disable 1591
 
 namespace YoutubeOrganizer.Controllers
 {

@@ -10,7 +10,7 @@
 
 @if (Model.Title.Contains("-"))
 {
-    using (Html.BeginForm("DisplayGroups", "Videos"))
+    using (Html.BeginForm("GroupByVideo", "Videos"))
     {
         @Html.HiddenFor(m=>m.ChannelId)
         @Html.DropDownListFor(m => m.GroupingSelected, Model.Groupings, "Select Grouping")

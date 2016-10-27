@@ -51,7 +51,6 @@
         @Model.TotalWatchedCount/@Model.TotalCount (@unwatched unwatched)
     </dd>
 </dl>
-@Html.ActionLink("Watched Videos", "WatchedVideos", "Videos")
 <button id="toggleWatchedButton"onclick="toggleWatched()">Showing All Videos</button>
 @using (Html.BeginForm("Index", "Videos"))
 {

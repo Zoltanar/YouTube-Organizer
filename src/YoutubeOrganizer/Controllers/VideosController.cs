@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -40,7 +41,7 @@ namespace YoutubeOrganizer.Controllers
         public async Task<IActionResult> Index(int page = 1)
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            return View(await _context.GetVideosAsync(info,pageIndex: page));
+            return View(await _context.GetVideosAsync(info, pageIndex: page));
         }
 
         /// <summary>
@@ -90,7 +91,7 @@ namespace YoutubeOrganizer.Controllers
                 return NotFound();
             }
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            var videoItem = await _context.GetSingleVideoItem(info,id);
+            var videoItem = await _context.GetSingleVideoItem(info, id);
             if (videoItem == null)
             {
                 return NotFound();
@@ -104,31 +105,6 @@ namespace YoutubeOrganizer.Controllers
         }
 
         /// <summary>
-        /// Show videos by the owner's channel that match the string/template selected
-        /// </summary>
-        /// <param name="model">Video Item containing required information</param>
-        [HttpPost]
-        public IActionResult DisplayGroups(VideoItem model)
-        {
-            return RedirectToAction("DisplayGroups",
-                new RouteValueDictionary { { "channelId", model.ChannelId }, { "groupingSelected", model.GroupingSelected } });
-
-        }
-
-        /// <summary>
-        /// Display videos by specified channel that match string or template.
-        /// </summary>
-        /// <param name="channelId">Id of Channel</param>
-        /// <param name="groupingSelected">string or template</param>
-        /// <param name="page">Page of results</param>
-        [Route("Videos/DisplayGroups/{channelId}/{groupingSelected}")]
-        public async Task<IActionResult> DisplayGroups(string channelId, string groupingSelected, int page = 1)
-        {
-            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
-            return View("Index", await _context.GetVideosByGroupingAsync(info, channelId, groupingSelected, pageIndex: page));
-        }
-
-        /// <summary>
         /// Display Watched Videos.
         /// </summary>
         /// <param name="page"></param>
@@ -136,6 +112,56 @@ namespace YoutubeOrganizer.Controllers
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
             return View(await _context.GetVideosWatchedAsync(info, pageIndex: page));
+        }
+
+        /// <summary>
+        /// Mark all videos of group as watched by the user.
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        public IActionResult MarkGroupAsWatched(RouteValueDictionary routeValueDictionary)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Save group of videos to user.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> SaveUserGroup(string channelId, string grouping, string groupName)
+        {
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null) return RedirectToAction("Index", "Home");
+            var userGroup = new UserGroup(info.ProviderKey, channelId, grouping, groupName);
+            _context.UserGroup.Add(userGroup);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Group", "Videos",new RouteValueDictionary { { "channelId", channelId }, { "groupingTemplate", grouping } });
+        }
+
+        /// <summary>
+        /// Display videos that match grouping.
+        /// </summary>
+        /// <param name="groupingTemplate"></param>
+        /// <param name="page">Page of results</param>
+        /// <param name="channelId">Id of videos' owner channel</param>
+        [Route("Videos/Group/{channelId}/{groupingTemplate}")]
+        public async Task<IActionResult> Group(string channelId, string groupingTemplate, int page = 1)
+        {
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null) return RedirectToAction("Index", "Home");
+            return View(await
+                        _context.GetVideosByGroupingAsync(info, channelId, groupingTemplate, pageIndex: page));
+        }
+
+        /// <summary>
+        /// Return group of videos from video details page.
+        /// </summary>
+        /// <param name="video">Video that forwarded to this method.</param>
+        [HttpPost]
+        public async Task<IActionResult> GroupByVideo(VideoItem video)
+        {
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null) return RedirectToAction("Index", "Home");
+            return View("Group", await _context.GetVideosByGroupingAsync(info, video.ChannelId, video.GroupingSelected));
         }
     }
 

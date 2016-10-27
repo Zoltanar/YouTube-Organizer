@@ -107,7 +107,10 @@ namespace YoutubeOrganizer
                                                     VideoURL = video.VideoURL,
                                                     Watched = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(video.Id)).Watched
                                                 };
-            return await FromLiveItemsAsync(liveResults, pageSize, pageIndex);
+            var pagedList = await FromLiveItemsAsync(liveResults, pageSize, pageIndex);
+            pagedList.ChannelId = channelId;
+            pagedList.Grouping = groupingSelected;
+            return pagedList;
         }
 
         /// <summary>
@@ -137,7 +140,9 @@ namespace YoutubeOrganizer
                                                     VideoURL = video.VideoURL,
                                                     Watched = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(video.Id)).Watched
                                                 };
-            return await FromLiveItemsAsync(liveResults, pageSize, pageIndex);
+            var pagedList = await FromLiveItemsAsync(liveResults, pageSize, pageIndex);
+            pagedList.ChannelId = channelId;
+            return pagedList;
         }
 
         /// <summary>
