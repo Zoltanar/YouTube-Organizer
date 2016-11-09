@@ -118,9 +118,12 @@ namespace YoutubeOrganizer.Controllers
         /// Mark all videos of group as watched by the user.
         /// </summary>
         /// <exception cref="NotImplementedException"></exception>
-        public IActionResult MarkGroupAsWatched(RouteValueDictionary routeValueDictionary)
+        public async Task<IActionResult> MarkGroupAsWatched(string channelId, string grouping)
         {
-            throw new NotImplementedException();
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null) return RedirectToAction("Index", "Home");
+            await _context.MarkVideoGroupAsWatchedAsync(info, channelId, grouping);
+            return RedirectToAction("Group", "Videos", new RouteValueDictionary { { "channelId", channelId }, { "groupingTemplate", grouping } });
         }
 
         /// <summary>

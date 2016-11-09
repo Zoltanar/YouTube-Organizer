@@ -1,0 +1,8 @@
+To Do
+------------
+Filter videos in channel details view (watched/unwatched)
+
+Completed
+------------
+List videos in a group (identified by channel and by string template)
+Mark Group as watched

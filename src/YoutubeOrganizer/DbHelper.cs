@@ -113,6 +113,26 @@ namespace YoutubeOrganizer
             return pagedList;
         }
 
+
+        public static async Task MarkVideoGroupAsWatchedAsync(this ApplicationDbContext context, ShortLoginInfo info, string channelId, string grouping)
+        {
+
+            IQueryable<UserVideo> userVideoResults = context.UserVideo.Where(x => x.UserID.Equals(info.ProviderKey));
+            string escapedGrouping = Regex.Escape(grouping);
+            var rgx = grouping.Contains("#num") ? new Regex(escapedGrouping.Replace("#num", @"#\d+")) : new Regex(escapedGrouping);
+            IEnumerable<string> results = from video in context.VideoItem
+                                          where rgx.IsMatch(video.Title) && video.ChannelId.Equals(channelId)
+                                          select video.Id;
+            foreach (var videoId in results)
+            {
+                var userVideo = userVideoResults.FirstOrDefault(x => x.VideoId.Equals(videoId));
+                //if uservideo is found, set its watched status to true, else, create new uservideo
+                if (userVideo != null) userVideo.Watched = true;
+                else context.UserVideo.Add(new UserVideo { UserID = info.ProviderKey, VideoId = videoId, Watched = true });
+            }
+            await context.SaveChangesAsync();
+        }
+
         /// <summary>
         /// Return list of videos by channel, sorted by PublishDate.
         /// </summary>

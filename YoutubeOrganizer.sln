@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A9D054B0-DD11-4445-8231-5236FFDE90E9}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
+		Project Status.txt = Project Status.txt
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "YoutubeOrganizer", "src\YoutubeOrganizer\YoutubeOrganizer.xproj", "{0BC942F6-6D42-49F3-AA3B-8E88BFA74C8C}"
