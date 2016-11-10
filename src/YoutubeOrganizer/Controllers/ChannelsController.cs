@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -313,7 +312,58 @@ namespace YoutubeOrganizer.Controllers
             channelItem.ChannelURL = YouTubeChannelPrepend + channelItem.Id;
             PagedVideoList channelVideos = await _context.GetVideosByChannelAsync(info, channelItem.Id,pageIndex: page);
             channelItem.NumberOfWatchedVideos = channelVideos.Count(x => x.Watched);
-            return View(new Tuple<ChannelItem, PagedVideoList>(channelItem, channelVideos));
+            return View(new ChannelViewModel(channelItem, channelVideos));
+        }
+
+
+        /// <summary>
+        /// Display details about specified channel, incl. videos published.
+        /// </summary>
+        /// <param name="model">ViewModel containing channel and video details.</param>
+        /// <param name="id">Id of channel</param>
+        /// <param name="page">Page of videos.</param>
+        [HttpPost]
+        public async Task<IActionResult> Details(ChannelViewModel model, string id, int page = 1)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.Id.Equals(id));
+            if (channelItem == null)
+            {
+                return NotFound();
+            }
+
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            List<string> currentUserVideos = await _context.UserVideo.Where(entry => entry.UserID.Equals(info.ProviderKey)).Select(entry => entry.VideoId).ToListAsync();
+            foreach (var video in model.VideoList)
+            {
+                if (currentUserVideos.Contains(video.Id))
+                {
+                    _context.UserVideo.Update(new UserVideo
+                    {
+                        UserID = info.ProviderKey,
+                        VideoId = video.Id,
+                        Watched = video.Watched
+                    });
+                }
+                else
+                {
+                    _context.UserVideo.Add(new UserVideo
+                    {
+                        UserID = info.ProviderKey,
+                        VideoId = video.Id,
+                        Watched = video.Watched
+                    });
+                }
+                await _context.SaveChangesAsync();
+            }
+            
+            channelItem.ChannelURL = YouTubeChannelPrepend + channelItem.Id;
+            PagedVideoList channelVideos = await _context.GetVideosByChannelAsync(info, channelItem.Id, pageIndex: page);
+            channelItem.NumberOfWatchedVideos = channelVideos.Count(x => x.Watched);
+            return View(new ChannelViewModel(channelItem, channelVideos));
         }
 
         /// <summary>

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace YoutubeOrganizer.Models
+﻿namespace YoutubeOrganizer.Models
 {
     /// <summary>
     /// Group of videos found by the relationship between User and a channelId, a group of videos (grouped by matching regex in their titles).

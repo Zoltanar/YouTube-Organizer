@@ -56,7 +56,7 @@
 {
     <input type="submit" style="float:right" value="Save Changes" />
         <input type="checkbox" id="checkAll" />
-        @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+        @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Index","Videos",Model.PageIndex,Model.TotalPage))
         <div id="video-grid-holder" class="grid-holder">
             <ul id="channels-browse-content-grid" class="channels-browse-content-grid branded-page-gutter-padding grid-lockups-container">
                 @for (int i = 0; i < Model.Count; i++)
@@ -107,6 +107,6 @@
                 }
             </ul>
         </div>
-        @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+        @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Index", "Videos", Model.PageIndex, Model.TotalPage))
         <input type="submit" style="float:right" value="Save Changes" />
 }

@@ -52,16 +52,17 @@
 {
     @Html.HiddenFor(m => m.ChannelId)
     @Html.HiddenFor(m => m.Grouping)
-    <input type="text" name="groupName" value="@Model.Grouping"/>
+    <input type="text" name="groupName" value="@Model.Grouping" />
 }
-<br/>
+<br />
 @Html.ActionLink("Mark all as watched.", "MarkGroupAsWatched", "Videos", new RouteValueDictionary { { "channelId", Model.ChannelId }, { "grouping", Model.Grouping } })
 <button id="toggleWatchedButton" onclick="toggleWatched()">Showing All Videos</button>
 @using (Html.BeginForm("Index", "Videos"))
 {
     <input type="submit" style="float:right" value="Save Changes" />
     <input type="checkbox" id="checkAll" />
-    @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
+    @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Group", "Videos", Model.PageIndex, Model.TotalPage, 
+    new RouteValueDictionary { { "channelId", Model.ChannelId }, { "grouping", Model.Grouping } }))
     <div id="video-grid-holder" class="grid-holder">
         <ul id="channels-browse-content-grid" class="channels-browse-content-grid branded-page-gutter-padding grid-lockups-container">
             @for (int i = 0; i < Model.Count; i++)
@@ -95,19 +96,22 @@
                                 <div class="yt-lockup-meta">
                                     @Html.ActionLink(Model[i].ChannelTitle, "Details", "Channels", new RouteValueDictionary { { "Id", Model[i].ChannelId } })
                                     <ul class="yt-lockup-meta-info">
-                                        <li>@Html.HiddenFor(m => m[i].Id)
-                                            @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })</li>
-                                        <li>@Model[i].TimeSince</li>
-                                        <li>@Html.EditorFor(m => m[i].Watched)</li>
-                                    </ul>
-                                </div>
+                                        <li>
+                                            @Html.HiddenFor(m => m[i].Id)
+                                        @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model[i].Id } })
+                                    </li>
+                                    <li>@Model[i].TimeSince</li>
+                                    <li>@Html.EditorFor(m => m[i].Watched)</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                </li>
+                </div>
+            </li>
             }
         </ul>
     </div>
-        @await Html.PartialAsync("~/Views/Shared/PaginationEdit.cshtml", Model)
-        <input type="submit" style="float:right" value="Save Changes" />
+    @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Group", "Videos", Model.PageIndex, Model.TotalPage,
+    new RouteValueDictionary { { "channelId", Model.ChannelId }, { "grouping", Model.Grouping } }))
+    <input type="submit" style="float:right" value="Save Changes" />
 }

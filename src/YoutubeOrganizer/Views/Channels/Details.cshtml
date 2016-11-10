@@ -1,49 +1,126 @@
-@model Tuple<ChannelItem, PagedVideoList>
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Routing
+@model ChannelViewModel
 @{
-    ViewData["Title"] = Model.Item1.ChannelTitle;
+    ViewData["Title"] = Model.Channel.ChannelTitle;
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<link rel="stylesheet" href="~/css/MyYouTube.css">
+<script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#checkAll").click(function () {
+            $(".check-box").prop('checked',
+                $(this).prop('checked'));
+        });
+    });
+
+</script>
+<script>
+    var toggleStatus = "only";
+    function toggleWatched() {
+        switch (toggleStatus) {
+            case "show":
+                $("li").filter(".watched").css("display", "inline-block");
+                $("li").filter(".unwatched").css("display", "inline-block");
+                $("#toggleWatchedButton").html("Showing All Videos");
+                toggleStatus = "only";
+                break;
+            case "only":
+                $("li").filter(".watched").css("display", "inline-block");
+                $("li").filter(".unwatched").css("display", "none");
+                $("#toggleWatchedButton").html("Showing Watched Videos");
+                toggleStatus = "hide";
+                break;
+            case "hide":
+                $("li").filter(".watched").css("display", "none");
+                $("li").filter(".unwatched").css("display", "inline-block");
+                $("#toggleWatchedButton").html("Showing Unwatched Videos");
+                toggleStatus = "show";
+                break;
+
+        }
+    }
+</script>
 
 <h2>Details</h2>
 
+<button id="toggleWatchedButton" onclick="toggleWatched()">Showing All Videos</button>
 <div>
-    <h4>@Html.DisplayFor(model => model.Item1.ChannelTitle)</h4>
+    <h4>@Html.DisplayFor(model => model.Channel.ChannelTitle)</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>YouTube Channel</dt>
-        <dd><a href="@Model.Item1.ChannelURL">@Model.Item1.ChannelURL</a></dd>
-        <dt>@Html.DisplayNameFor(model => model.Item1.UploadPlaylist)</dt>
-        <dd>@Html.DisplayFor(model => model.Item1.UploadPlaylist)</dd>
+        <dd><a href="@Model.Channel.ChannelURL">@Model.Channel.ChannelURL</a></dd>
+        <dt>@Html.DisplayNameFor(model => model.Channel.UploadPlaylist)</dt>
+        <dd>@Html.DisplayFor(model => model.Channel.UploadPlaylist)</dd>
         <dt>Videos Watched:</dt>
         <dd>
-            @{ var unwatched = Model.Item2.TotalCount - Model.Item2.TotalWatchedCount;}
-            @Model.Item2.TotalWatchedCount/@Model.Item2.TotalCount (@unwatched unwatched)
+            @{ var unwatched = Model.VideoList.TotalCount - Model.VideoList.TotalWatchedCount;}
+            @Model.VideoList.TotalWatchedCount/@Model.VideoList.TotalCount (@unwatched unwatched)
         </dd>
     </dl>
 </div>
 <div>
     <a asp-action="Index">Back to List</a> | 
-<a asp-action="UpdateVideosChannelPage" asp-route-id="@Model.Item1.Id">Update Videos</a>
+<a asp-action="UpdateVideosChannelPage" asp-route-id="@Model.Channel.Id">Update Videos</a>
 </div>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Item2.FirstOrDefault().Title)</th>
-            <th>@Html.DisplayNameFor(model => model.Item2.FirstOrDefault().PublishDate)</th>
-            <th>@Html.DisplayNameFor(model => model.Item2.FirstOrDefault().Watched)</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Item2)
-        {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.Title)</td>
-                <td>@Html.DisplayFor(modelItem => item.PublishDate)</td>
-                <td>@Html.DisplayFor(modelItem => item.Watched)</td>
-                <td><a asp-controller="Videos" asp-action="Details" asp-route-id="@item.Id">Details</a></td>
-            </tr>
-        }
-    </tbody>
-</table>
+@using (Html.BeginForm("Details", "Channels", new RouteValueDictionary { {"Id", Model.Channel.Id}, { "Page", Model.VideoList.PageIndex } }))
+{
+    <input type="submit" style="float: right" value="Save Changes"/>
+    <input type="checkbox" id="checkAll"/>
+    @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Details", "Channels", Model.VideoList.PageIndex, Model.VideoList.TotalPage,
+    new RouteValueDictionary { { "Id", Model.Channel.Id } }))
+    <div id="video-grid-holder" class="grid-holder">
+        <ul id="channels-browse-content-grid" class="channels-browse-content-grid branded-page-gutter-padding grid-lockups-container">
+            @for (int i = 0; i < Model.VideoList.Count; i++)
+            {
+                <li class="@("channels-content-item yt-shelf-grid-item" + (Model.VideoList[i].Watched ? " watched" : " unwatched"))">
+                    <div class="yt-lockup clearfix yt-lockup-grid">
+                        <div class="yt-lockup-dismissable">
+                            <div class="yt-lockup-thumbnail">
+                                <span class="spf-link ux-thumb-wrap contains-addto">
+                                        <a href="@Model.VideoList[i].VideoURL" class="yt-uix-sessionlink" aria-hidden="true">
+                                            <span class="video-thumb  yt-thumb yt-thumb-196">
+                                                <span class="yt-thumb-default">
+                                                    <span class="yt-thumb-clip">
+                                                        <img alt="" aria-hidden="true" width="196" src="@Model.VideoList[i].ThumbnailUrl">
+                                                        <span class="vertical-align"></span>
+                                                    </span>
+                                                </span>
+                                            </span>
+                                        </a>
+                                        <span class="video-time" aria-hidden="true">
+                                            <span aria-label="@Model.VideoList[i].Duration">
+                                                @Model.VideoList[i].DisplayDuration
+                                            </span>
+                                        </span>
+                                        <span class="yt-uix-button-arrow yt-sprite"></span>
+                                    </span>
+                            </div>
+                            <div class="yt-lockup-content">
+                                <h3 class="yt-lockup-title">
+                                    <a class="yt-uix-sessionlink yt-uix-tile-link  spf-link  yt-ui-ellipsis yt-ui-ellipsis-2" dir="ltr" title="@Model.VideoList[i].Title" href="@Model.VideoList[i].VideoURL">@Model.VideoList[i].Title</a>
+                                    <span class="accessible-description">- Duration: @Model.VideoList[i].DisplayDuration</span>
+                                </h3>
+                                <div class="yt-lockup-meta">
+                                    <ul class="yt-lockup-meta-info">
+                                        <li>
+                                            @Html.HiddenFor(m => m.VideoList[i].Id)
+                                            @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary {{"Id", Model.VideoList[i].Id}})
+                                        </li>
+                                        <li>@Model.VideoList[i].TimeSince</li>
+                                        <li>@Html.EditorFor(m => m.VideoList[i].Watched)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+    @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Details","Channels",Model.VideoList.PageIndex,Model.VideoList.TotalPage,
+    new RouteValueDictionary { {"Id",Model.Channel.Id} }))
+    <input type="submit" style="float:right" value="Save Changes" />
+}
