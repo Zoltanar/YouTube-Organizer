@@ -26,18 +26,31 @@
         public string GroupingTemplate { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// Create UserGroup from user, groupname and channel.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="channelId"></param>
-        /// <param name="groupingTemplate"></param>
-        /// <param name="groupName"></param>
-        public UserGroup(string userId, string channelId, string groupingTemplate, string groupName)
+        /// <param name="userId">ProviderKey of user (by Google)</param>
+        /// <param name="channelId">YouTube's unique channel identifier</param>
+        /// <param name="groupName">Name of group</param>
+        public UserGroup(string userId, string channelId, string groupName)
         {
             UserId = userId;
             ChannelId = channelId;
-            GroupingTemplate = groupingTemplate;
             GroupName = groupName;
+        }
+
+        /// <summary>
+        /// Create UserGroup from user, groupname, channel and groupingTemplate.
+        /// </summary>
+        /// <param name="userId">ProviderKey of user (by Google)</param>
+        /// <param name="channelId">YouTube's unique channel identifier</param>
+        /// <param name="groupName">Name of group</param>
+        /// <param name="groupingTemplate">String defining videos in group</param>
+        public UserGroup(string userId, string channelId, string groupName,string groupingTemplate)
+        {
+            UserId = userId;
+            ChannelId = channelId;
+            GroupName = groupName;
+            GroupingTemplate = groupingTemplate;
         }
     }
 }

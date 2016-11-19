@@ -14,7 +14,6 @@
                 $(this).prop('checked'));
         });
     });
-
 </script>
 <script>
     var toggleStatus = "only";
@@ -38,7 +37,6 @@
                 $("#toggleWatchedButton").html("Showing Unwatched Videos");
                 toggleStatus = "show";
                 break;
-
         }
     }
 </script>
@@ -59,16 +57,23 @@
             @{ var unwatched = Model.VideoList.TotalCount - Model.VideoList.TotalWatchedCount;}
             @Model.VideoList.TotalWatchedCount/@Model.VideoList.TotalCount (@unwatched unwatched)
         </dd>
+        @using (Html.BeginForm("AddChannelToGroup", "Channels",new RouteValueDictionary { {"Page", Model.VideoList.PageIndex} }))
+        {
+            <dt>Add channel to group:</dt>
+            <dd>@Html.HiddenFor(m=>m.Channel.Id)
+                @Html.EditorFor(m => m.Group)
+            </dd>
+        }
     </dl>
 </div>
 <div>
-    <a asp-action="Index">Back to List</a> | 
-<a asp-action="UpdateVideosChannelPage" asp-route-id="@Model.Channel.Id">Update Videos</a>
+    <a asp-action="Index">Back to List</a> |
+    <a asp-action="UpdateVideosChannelPage" asp-route-id="@Model.Channel.Id">Update Videos</a>
 </div>
-@using (Html.BeginForm("Details", "Channels", new RouteValueDictionary { {"Id", Model.Channel.Id}, { "Page", Model.VideoList.PageIndex } }))
+@using (Html.BeginForm("Details", "Channels", new RouteValueDictionary { { "Id", Model.Channel.Id }, { "Page", Model.VideoList.PageIndex } }))
 {
-    <input type="submit" style="float: right" value="Save Changes"/>
-    <input type="checkbox" id="checkAll"/>
+    <input type="submit" style="float: right" value="Save Changes" />
+    <input type="checkbox" id="checkAll" />
     @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Details", "Channels", Model.VideoList.PageIndex, Model.VideoList.TotalPage,
     new RouteValueDictionary { { "Id", Model.Channel.Id } }))
     <div id="video-grid-holder" class="grid-holder">
@@ -80,23 +85,23 @@
                         <div class="yt-lockup-dismissable">
                             <div class="yt-lockup-thumbnail">
                                 <span class="spf-link ux-thumb-wrap contains-addto">
-                                        <a href="@Model.VideoList[i].VideoURL" class="yt-uix-sessionlink" aria-hidden="true">
-                                            <span class="video-thumb  yt-thumb yt-thumb-196">
-                                                <span class="yt-thumb-default">
-                                                    <span class="yt-thumb-clip">
-                                                        <img alt="" aria-hidden="true" width="196" src="@Model.VideoList[i].ThumbnailUrl">
-                                                        <span class="vertical-align"></span>
-                                                    </span>
+                                    <a href="@Model.VideoList[i].VideoURL" class="yt-uix-sessionlink" aria-hidden="true">
+                                        <span class="video-thumb  yt-thumb yt-thumb-196">
+                                            <span class="yt-thumb-default">
+                                                <span class="yt-thumb-clip">
+                                                    <img alt="" aria-hidden="true" width="196" src="@Model.VideoList[i].ThumbnailUrl">
+                                                    <span class="vertical-align"></span>
                                                 </span>
                                             </span>
-                                        </a>
-                                        <span class="video-time" aria-hidden="true">
-                                            <span aria-label="@Model.VideoList[i].Duration">
-                                                @Model.VideoList[i].DisplayDuration
-                                            </span>
                                         </span>
-                                        <span class="yt-uix-button-arrow yt-sprite"></span>
+                                    </a>
+                                    <span class="video-time" aria-hidden="true">
+                                        <span aria-label="@Model.VideoList[i].Duration">
+                                            @Model.VideoList[i].DisplayDuration
+                                        </span>
                                     </span>
+                                    <span class="yt-uix-button-arrow yt-sprite"></span>
+                                </span>
                             </div>
                             <div class="yt-lockup-content">
                                 <h3 class="yt-lockup-title">
@@ -107,7 +112,7 @@
                                     <ul class="yt-lockup-meta-info">
                                         <li>
                                             @Html.HiddenFor(m => m.VideoList[i].Id)
-                                            @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary {{"Id", Model.VideoList[i].Id}})
+                                            @Html.ActionLink("Details", "Details", "Videos", new RouteValueDictionary { { "Id", Model.VideoList[i].Id } })
                                         </li>
                                         <li>@Model.VideoList[i].TimeSince</li>
                                         <li>@Html.EditorFor(m => m.VideoList[i].Watched)</li>
@@ -120,7 +125,7 @@
             }
         </ul>
     </div>
-    @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Details","Channels",Model.VideoList.PageIndex,Model.VideoList.TotalPage,
-    new RouteValueDictionary { {"Id",Model.Channel.Id} }))
+    @await Html.PartialAsync("~/Views/Shared/Pagination.cshtml", new PaginationViewModel("Details", "Channels", Model.VideoList.PageIndex, Model.VideoList.TotalPage,
+    new RouteValueDictionary { { "Id", Model.Channel.Id } }))
     <input type="submit" style="float:right" value="Save Changes" />
 }

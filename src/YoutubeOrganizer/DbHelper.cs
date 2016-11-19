@@ -192,7 +192,7 @@ namespace YoutubeOrganizer
         #region Database Set Methods
 
         /// <summary>
-        /// Sets all members of a group as watched, by channelId and grouping template
+        /// Sets all members of a group as watched, by channelId and grouping template.
         /// </summary>
         /// <param name="context">Context containing database</param>
         /// <param name="info">Login Info of user</param>
@@ -214,6 +214,19 @@ namespace YoutubeOrganizer
                 else context.UserVideo.Add(new UserVideo { UserID = info.ProviderKey, VideoId = videoId, Watched = true });
             }
             await context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Add channel to usergroup
+        /// </summary>
+        /// <param name="context">Context containing database</param>
+        /// <param name="info">Login Info of user</param>
+        /// <param name="channelId">YouTube's unique channel identifier</param>
+        /// <param name="groupName">Name of group</param>
+        public static void AddChannelToGroup(this ApplicationDbContext context, ShortLoginInfo info, string channelId, string groupName)
+        {
+            var group = new UserGroup(info.ProviderKey,channelId, groupName);
+            context.UserGroup.Add(group);
         }
 
         #endregion

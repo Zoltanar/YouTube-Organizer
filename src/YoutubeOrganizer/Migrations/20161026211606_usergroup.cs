@@ -16,11 +16,9 @@ namespace YoutubeOrganizer.Migrations
                     ChannelId = table.Column<string>(nullable: false),
                     GroupingTemplate = table.Column<string>(nullable: false),
                     GroupName = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserGroup", x => new { x.UserId, x.ChannelId, x.GroupingTemplate });
                 });
+            migrationBuilder.Sql(
+                "     CONSTRAINT [PK_UserGroup] CHECK (\r\n     ([ChannelId] IS NOT NULL AND [GroupingTemplate] IS NULL AND [VideoId] IS NULL)\r\n  OR ([ChannelId] IS NOT NULL AND [GroupingTemplate] IS NOT NULL AND [VideoId] IS NULL)\r\n  OR ([GroupingTemplate] IS NOT NULL AND [ChannelId] IS NULL AND [VideoId] IS NULL) \r\n  OR ([VideoId] IS NOT NULL AND [ChannelId] IS NULL AND [GroupingTemplate] IS NULL)))");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

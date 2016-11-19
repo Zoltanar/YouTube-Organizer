@@ -1,8 +1,12 @@
 To Do
 ------------
 Filter videos in channel details view (watched/unwatched)
+Add videos to group
+Add channel+template string to group
 
 Completed
 ------------
 List videos in a group (identified by channel and by string template)
 Mark Group as watched
+Change video details
+Add channel to group

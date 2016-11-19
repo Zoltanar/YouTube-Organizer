@@ -16,6 +16,11 @@
         public PagedVideoList VideoList { get; set; }
 
         /// <summary>
+        /// Name of UserGroup where channel belongs.
+        /// </summary>
+        public string Group { get; set; }
+
+        /// <summary>
         /// ViewModel for channel details pages.
         /// </summary>
         /// <param name="channel">Channel details</param>

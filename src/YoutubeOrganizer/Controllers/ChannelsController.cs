@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using YoutubeOrganizer.Data;
 using YoutubeOrganizer.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 
 namespace YoutubeOrganizer.Controllers
 {
@@ -334,7 +335,6 @@ namespace YoutubeOrganizer.Controllers
             {
                 return NotFound();
             }
-
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
             List<string> currentUserVideos = await _context.UserVideo.Where(entry => entry.UserID.Equals(info.ProviderKey)).Select(entry => entry.VideoId).ToListAsync();
             foreach (var video in model.VideoList)
@@ -357,13 +357,40 @@ namespace YoutubeOrganizer.Controllers
                         Watched = video.Watched
                     });
                 }
-                await _context.SaveChangesAsync();
             }
-            
+            await _context.SaveChangesAsync();
             channelItem.ChannelURL = YouTubeChannelPrepend + channelItem.Id;
             PagedVideoList channelVideos = await _context.GetVideosByChannelAsync(info, channelItem.Id, pageIndex: page);
             channelItem.NumberOfWatchedVideos = channelVideos.Count(x => x.Watched);
             return View(new ChannelViewModel(channelItem, channelVideos));
+        }
+
+        /// <summary>
+        /// Add channel to usergroup.
+        /// </summary>
+        /// <param name="model">Model of Channel</param>
+        /// <param name="page">Page of channel videos</param>
+        [HttpPost]
+        public async Task<IActionResult> AddChannelToGroup(ChannelViewModel model, int page = 1)
+        {
+            if (model.Channel.Id == null)
+            {
+                return NotFound();
+            }
+            if (model.Group == null)
+            {
+                return NotFound();
+            }
+            var channelItem = await _context.ChannelItem.SingleOrDefaultAsync(m => m.Id.Equals(model.Channel.Id));
+            if (channelItem == null)
+            {
+                return NotFound();
+            }
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            if (info == null) return RedirectToAction("Index", "Home");
+            _context.AddChannelToGroup(info, model.Channel.Id, model.Group);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", "Channels", new RouteValueDictionary {{"Id", model.Channel.Id}, {"Page",page} });
         }
 
         /// <summary>

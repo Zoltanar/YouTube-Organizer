@@ -105,6 +105,42 @@ namespace YoutubeOrganizer.Controllers
         }
 
         /// <summary>
+        /// Save video details.
+        /// </summary>
+        /// <param name="video">video</param>
+        [HttpPost]
+        public async Task<IActionResult> Details(VideoItem video)
+        {
+            if (video.Id == null)
+            {
+                return NotFound();
+            }
+            var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
+            var videoItem = await _context.GetSingleVideoItem(info, video.Id);
+            if (videoItem == null)
+            {
+                return NotFound();
+            }
+            var existingVideo =
+               await  _context.UserVideo.FirstOrDefaultAsync(x => x.UserID.Equals(info.ProviderKey) && x.VideoId.Equals(video.Id));
+            if (existingVideo == null)
+                _context.UserVideo.Add(new UserVideo
+                {
+                    UserID = info.ProviderKey,
+                    VideoId = video.Id,
+                    Watched = video.Watched
+                });
+            else
+            {
+                existingVideo.Watched = video.Watched;
+                _context.UserVideo.Update(existingVideo);
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details",new RouteValueDictionary { {"Id",video.Id} });
+        }
+
+
+        /// <summary>
         /// Display Watched Videos.
         /// </summary>
         /// <param name="page"></param>
@@ -134,7 +170,7 @@ namespace YoutubeOrganizer.Controllers
         {
             var info = await _userManager.GetCurrentLoginInfoAsync(HttpContext);
             if (info == null) return RedirectToAction("Index", "Home");
-            var userGroup = new UserGroup(info.ProviderKey, channelId, grouping, groupName);
+            var userGroup = new UserGroup(info.ProviderKey, channelId, groupName, grouping);
             _context.UserGroup.Add(userGroup);
             await _context.SaveChangesAsync();
             return RedirectToAction("Group", "Videos",new RouteValueDictionary { { "channelId", channelId }, { "grouping", grouping } });

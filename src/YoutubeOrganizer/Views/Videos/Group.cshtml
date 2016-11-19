@@ -57,7 +57,7 @@
 <br />
 @Html.ActionLink("Mark all as watched.", "MarkGroupAsWatched", "Videos", new RouteValueDictionary { { "channelId", Model.ChannelId }, { "grouping", Model.Grouping } })
 <button id="toggleWatchedButton" onclick="toggleWatched()">Showing All Videos</button>
-@using (Html.BeginForm("Index", "Videos"))
+@using (Html.BeginForm())
 {
     <input type="submit" style="float:right" value="Save Changes" />
     <input type="checkbox" id="checkAll" />
